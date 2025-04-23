@@ -35,7 +35,8 @@
       padding: 12px;
       text-align: left;
       border-radius: 8px 8px 0 0;
-      font-size: 0.95rem;}
+      font-size: 0.95rem;
+    }
     td {
       padding: 8px;
       background: #f1f3f6;
@@ -78,6 +79,7 @@
       color: #d32f2f;
     }
   </style>
+  <script src="js/config.js"></script>
 </head>
 <body>
   <button onclick="goBack()" style="margin-bottom: 20px; background: #ccc; padding: 10px 16px; border-radius: 6px; border: none; cursor: pointer;">⬅ Back</button>
@@ -118,13 +120,14 @@
     <button class="add-btn" onclick="addRow('accommodationTable')">+ Row</button>
   </div>
 
+  <script src="js/config.js"></script>
   <script>
     const token = localStorage.getItem('token');
     const params = new URLSearchParams(window.location.search);
     const tableId = params.get('id');
 
     async function loadData() {
-      const res = await fetch(`http://localhost:3000/api/tables/${tableId}/travel`, {
+      const res = await fetch(`${API_BASE}/api/tables/${tableId}/travel`, {
         headers: { Authorization: token }
       });
       const data = await res.json();
@@ -167,7 +170,7 @@
     async function saveData() {
       const travelRows = collectTableData('travelTable');
       const accommodationRows = collectTableData('accommodationTable');
-      await fetch(`http://localhost:3000/api/tables/${tableId}/travel`, {
+      await fetch(`${API_BASE}/api/tables/${tableId}/travel`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -192,24 +195,27 @@
     }
 
     window.addEventListener("DOMContentLoaded", async () => {
-  const res = await fetch(`http://localhost:3000/api/tables/${tableId}`, {
-    headers: { Authorization: token }
-  });
-  if (res.ok) {
-    const table = await res.json();
-    document.getElementById('eventTitle').textContent = table.title;
-  }
-  loadData();
-});
+      const res = await fetch(`${API_BASE}/api/tables/${tableId}`, {
+        headers: { Authorization: token }
+      });
+      if (res.ok) {
+        const table = await res.json();
+        document.getElementById('eventTitle').textContent = table.title;
+      }
+      loadData();
+    });
+
     window.addEventListener("beforeunload", saveData);
-  function removeRow(button) {
-  const row = button.closest('tr');
-  row.parentElement.removeChild(row);
-  saveData();
-}
-function goBack() {
-  window.location.href = `event.html?id=${tableId}`;
-}
-</script>
+
+    function removeRow(button) {
+      const row = button.closest('tr');
+      row.parentElement.removeChild(row);
+      saveData();
+    }
+
+    function goBack() {
+      window.location.href = `event.html?id=${tableId}`;
+    }
+  </script>
 </body>
 </html>

@@ -1,5 +1,5 @@
 async function register() {
-  const res = await fetch('http://localhost:3000/api/auth/register', {
+  const res = await fetch(`${API_BASE}/api/auth/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -8,6 +8,7 @@ async function register() {
       password: document.getElementById('regPassword').value
     })
   });
+
   const data = await res.json();
   alert(data.message || JSON.stringify(data));
   if (data.message === 'User created') {

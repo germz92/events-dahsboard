@@ -1,5 +1,5 @@
 async function register() {
-  const res = await fetch('http://localhost:3000/api/auth/register', {
+  const res = await fetch(`${API_BASE}/api/auth/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -10,10 +10,13 @@ async function register() {
   });
   const data = await res.json();
   alert(data.message || JSON.stringify(data));
+  if (data.message === 'User created') {
+    window.location.href = 'login.html';
+  }
 }
 
 async function login() {
-  const res = await fetch('http://localhost:3000/api/auth/login', {
+  const res = await fetch(`${API_BASE}/api/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({

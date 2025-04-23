@@ -20,7 +20,7 @@ function calculateHours(start, end) {
 }
 
 async function loadTable() {
-  const res = await fetch(`http://localhost:3000/api/tables/${tableId}`, {
+  const res = await fetch(`${API_BASE}/api/tables/${tableId}`, {
     headers: { Authorization: token }
   });
   tableData = await res.json();
@@ -141,7 +141,7 @@ async function addRowToDate(date) {
     notes: document.getElementById(`notes-${date}`).value
   };
 
-  await fetch(`http://localhost:3000/api/tables/${tableId}/rows`, {
+  await fetch(`${API_BASE}/api/tables/${tableId}/rows`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -154,7 +154,7 @@ async function addRowToDate(date) {
 }
 
 async function populateUserDropdown() {
-  const res = await fetch('http://localhost:3000/api/users', {
+  const res = await fetch(`${API_BASE}/api/users`, {
     headers: { Authorization: token }
   });
   const users = await res.json();
@@ -170,12 +170,11 @@ async function populateUserDropdown() {
   });
 }
 
-
 async function deleteRow(date, index) {
   const rowsForDate = tableData.rows.filter(row => row.date === date);
   const globalIndex = tableData.rows.findIndex((row, i) => row === rowsForDate[index]);
 
-  const res = await fetch(`http://localhost:3000/api/tables/${tableId}/rows/${globalIndex}`, {
+  const res = await fetch(`${API_BASE}/api/tables/${tableId}/rows/${globalIndex}`, {
     method: 'DELETE',
     headers: { Authorization: token }
   });

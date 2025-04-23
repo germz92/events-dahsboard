@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>Event Dashboard</title>
   <link rel="stylesheet" href="css/styles.css">
+  <script src="js/config.js"></script>
 </head>
 
 <script>
@@ -40,24 +41,24 @@
     document.getElementById('travelLink').href = `travel-accommodation.html?id=${tableId}`;
   </script>
 
-<script>
-  document.addEventListener('DOMContentLoaded', async () => {
-    const params = new URLSearchParams(window.location.search);
-    const tableId = params.get('id');
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const params = new URLSearchParams(window.location.search);
+      const tableId = params.get('id');
 
-    const res = await fetch(`http://localhost:3000/api/tables/${tableId}`, {
-      headers: {
-        Authorization: localStorage.getItem('token')
+      const res = await fetch(`${API_BASE}/api/tables/${tableId}`, {
+        headers: {
+          Authorization: localStorage.getItem('token')
+        }
+      });
+
+      if (res.ok) {
+        const table = await res.json();
+        document.getElementById('tableTitle').textContent = table.title;
+      } else {
+        document.getElementById('tableTitle').textContent = 'Event not found';
       }
     });
-
-    if (res.ok) {
-      const table = await res.json();
-      document.getElementById('tableTitle').textContent = table.title;
-    } else {
-      document.getElementById('tableTitle').textContent = 'Event not found';
-    }
-  });
-</script>
+  </script>
 </body>
 </html>

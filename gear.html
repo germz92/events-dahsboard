@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>Gear Checklist</title>
   <link rel="stylesheet" href="css/styles.css">
+  <script src="js/config.js"></script>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -86,13 +87,13 @@
 
     async function loadGear() {
       try {
-        const res = await fetch(`http://localhost:3000/api/tables/${tableId}/gear`, {
+        const res = await fetch(`${API_BASE}/api/tables/${tableId}/gear`, {
           headers: { Authorization: token }
         });
         if (!res.ok) throw new Error("Failed to fetch gear");
 
         savedGear = await res.json();
-        const eventRes = await fetch(`http://localhost:3000/api/tables/${tableId}`, {
+        const eventRes = await fetch(`${API_BASE}/api/tables/${tableId}`, {
           headers: { Authorization: token }
         });
         if (eventRes.ok) {
@@ -145,7 +146,7 @@
         data[name] = items;
       });
 
-      await fetch(`http://localhost:3000/api/tables/${tableId}/gear`, {
+      await fetch(`${API_BASE}/api/tables/${tableId}/gear`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

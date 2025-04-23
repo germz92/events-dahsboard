@@ -12,6 +12,7 @@
       padding: 40px;
       color: #333;
     }
+
     .section {
       background: white;
       border-radius: 16px;
@@ -19,17 +20,25 @@
       margin-bottom: 40px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
+
     .section h2 {
       margin-top: 0;
       font-size: 1.5rem;
       color: #222;
     }
+
+    .table-wrapper {
+      overflow-x: auto;
+    }
+
     table {
       width: 100%;
+      min-width: 600px;
       border-collapse: separate;
       border-spacing: 0 8px;
       margin-top: 16px;
     }
+
     th {
       background: #e0e0e0;
       color: black;
@@ -38,16 +47,19 @@
       border-radius: 8px 8px 0 0;
       font-size: 0.95rem;
     }
+
     td {
       padding: 8px;
       background: #f1f3f6;
       border-radius: 6px;
     }
+
     table tr td input,
     table tr td button {
       width: 100%;
       box-sizing: border-box;
     }
+
     input[type="text"], input[type="date"], input[type="time"] {
       padding: 8px 10px;
       border: 1px solid #ccc;
@@ -56,6 +68,7 @@
       font-size: 0.95rem;
       color: #333;
     }
+
     .add-btn {
       background: #3f51b5;
       color: white;
@@ -66,9 +79,11 @@
       margin-top: 16px;
       font-weight: 600;
     }
+
     .add-btn:hover {
       background: #2c3ea8;
     }
+
     .delete-btn {
       background: transparent;
       border: none;
@@ -76,6 +91,7 @@
       color: #888;
       cursor: pointer;
     }
+
     .delete-btn:hover {
       color: #d32f2f;
     }
@@ -85,43 +101,47 @@
 <body>
   <button onclick="goBack()" style="margin-bottom: 20px; background: #ccc; padding: 10px 16px; border-radius: 6px; border: none; cursor: pointer;">⬅ Back</button>
   <h1 id="eventTitle" style="text-align: center; margin-bottom: 40px;"></h1>
+
   <div class="section">
     <h2>Travel</h2>
-    <table id="travelTable">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Time</th>
-          <th>Airline</th>
-          <th>Name</th>
-          <th>Ref Number</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+    <div class="table-wrapper">
+      <table id="travelTable">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Airline</th>
+            <th>Name</th>
+            <th>Ref Number</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
     <button class="add-btn" onclick="addRow('travelTable')">+ Row</button>
   </div>
 
   <div class="section">
     <h2>Accommodation</h2>
-    <table id="accommodationTable">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Time</th>
-          <th>Hotel</th>
-          <th>Name</th>
-          <th>Ref Number</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+    <div class="table-wrapper">
+      <table id="accommodationTable">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Hotel</th>
+            <th>Name</th>
+            <th>Ref Number</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
     <button class="add-btn" onclick="addRow('accommodationTable')">+ Row</button>
   </div>
 
-  <script src="js/config.js"></script>
   <script>
     const token = localStorage.getItem('token');
     const params = new URLSearchParams(window.location.search);
@@ -168,19 +188,6 @@
       table.appendChild(row);
     }
 
-    async function saveData() {
-      const travelRows = collectTableData('travelTable');
-      const accommodationRows = collectTableData('accommodationTable');
-      await fetch(`${API_BASE}/api/tables/${tableId}/travel`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: token
-        },
-        body: JSON.stringify({ travel: travelRows, accommodation: accommodationRows })
-      });
-    }
-
     function collectTableData(tableId) {
       const rows = document.getElementById(tableId).querySelectorAll("tbody tr");
       return Array.from(rows).map(row => {
@@ -195,6 +202,25 @@
       });
     }
 
+    async function saveData() {
+      const travelRows = collectTableData('travelTable');
+      const accommodationRows = collectTableData('accommodationTable');
+      const res = await fetch(`${API_BASE}/api/tables/${tableId}/travel`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: token
+        },
+        body: JSON.stringify({ travel: travelRows, accommodation: accommodationRows })
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        console.error('Failed to save:', error);
+        alert('Failed to save data.');
+      }
+    }
+
     window.addEventListener("DOMContentLoaded", async () => {
       const res = await fetch(`${API_BASE}/api/tables/${tableId}`, {
         headers: { Authorization: token }
@@ -203,10 +229,12 @@
         const table = await res.json();
         document.getElementById('eventTitle').textContent = table.title;
       }
-      loadData();
+      await loadData();
     });
 
-    window.addEventListener("beforeunload", saveData);
+    window.addEventListener("beforeunload", () => {
+      saveData();
+    });
 
     function removeRow(button) {
       const row = button.closest('tr');

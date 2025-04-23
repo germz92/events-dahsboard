@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gear Checklist</title>
   <link rel="stylesheet" href="css/styles.css">
@@ -14,15 +14,19 @@
       padding: 40px;
       color: #333;
     }
+
     h1, h2 {
       text-align: center;
     }
+
     .gear-container {
       display: flex;
+      flex-wrap: wrap;
       justify-content: center;
       gap: 20px;
       padding: 20px 0;
     }
+
     .category {
       background: white;
       border-radius: 12px;
@@ -32,17 +36,20 @@
       display: flex;
       flex-direction: column;
     }
+
     .category h3 {
       margin: 0 0 12px 0;
       font-size: 1.1rem;
       color: #3f51b5;
     }
+
     .item {
       display: flex;
       align-items: center;
       margin-bottom: 8px;
       gap: 6px;
     }
+
     .item input[type="text"] {
       flex: 1;
       padding: 6px 8px;
@@ -50,10 +57,12 @@
       border-radius: 6px;
       font-size: 0.95rem;
     }
+
     .item input[type="checkbox"] {
       width: 16px;
       height: 16px;
     }
+
     .add-btn {
       background: #3f51b5;
       color: white;
@@ -64,12 +73,32 @@
       font-weight: 600;
       margin-top: 12px;
     }
+
     .add-btn:hover {
       background: #2c3ea8;
     }
+
+    @media (max-width: 768px) {
+      .category {
+        width: 100%;
+        max-width: 100%;
+      }
+
+      .gear-container {
+        padding: 0;
+      }
+    }
+    .gear-page body {
+  display: block;
+  padding: 40px;
+  align-items: unset;
+  justify-content: unset;
+}
+
   </style>
 </head>
-<body>
+<body class="gear-page">
+
   <button onclick="goBack()" style="margin-bottom: 20px; background: #ccc; padding: 10px 16px; border-radius: 6px; border: none; cursor: pointer;">⬅ Back</button>
   <h2 id="eventTitle" style="margin-bottom: 30px;"></h2>
   <h1>Gear Checklist</h1>
@@ -94,6 +123,7 @@
         if (!res.ok) throw new Error("Failed to fetch gear");
 
         savedGear = await res.json();
+
         const eventRes = await fetch(`${API_BASE}/api/tables/${tableId}`, {
           headers: { Authorization: token }
         });
@@ -101,6 +131,7 @@
           const table = await eventRes.json();
           document.getElementById('eventTitle').textContent = table.title;
         }
+
         categories.forEach(createCategory);
       } catch (err) {
         console.error("Error loading gear:", err);

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Crew Call</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <button onclick="goBack()" style="margin-bottom: 20px; background: #ccc; padding: 10px 16px; border-radius: 6px; border: none; cursor: pointer;">⬅ Back</button>
+
+  <h1 id="tableTitle"></h1>
+
+  <div class="top-controls">
+    <div class="left">
+      <input type="date" id="newDate">
+      <button onclick="addDateSection()">Add Date</button>
+    </div>
+  </div>
+
+  <div id="dateSections"></div>
+
+  <script src="js/crew.js"></script>
+</body>
+</html>

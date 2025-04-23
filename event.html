@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Event Dashboard</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<script>
+  function goToGear() {
+    const params = new URLSearchParams(window.location.search);
+    const tableId = params.get('id');
+    if (tableId) {
+      window.location.href = `gear.html?id=${tableId}`;
+    } else {
+      alert("Missing event ID");
+    }
+  }
+</script>
+
+<body>
+  <button onclick="window.location.href='events.html'" style="margin: 20px 0;">⬅ Back to Events</button>
+  <div class="dashboard-container">
+    <h2 id="tableTitle"></h2>
+    <h1>Event Dashboard</h1>
+    <nav class="event-links">
+      <a id="generalLink">General</a>
+      <a id="crewLink">Crew Call</a>
+      <a id="travelLink">Travel and Accommodations</a>
+      <a id="gearLink" class="event-button">Gear List</a>
+    </nav>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const tableId = params.get('id');
+    document.getElementById('crewLink').href = `crew.html?id=${tableId}`;
+    document.getElementById('generalLink').href = `general.html?id=${tableId}`;
+    document.getElementById('gearLink').href = `gear.html?id=${tableId}`;
+    document.getElementById('travelLink').href = `travel-accommodation.html?id=${tableId}`;
+  </script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', async () => {
+    const params = new URLSearchParams(window.location.search);
+    const tableId = params.get('id');
+
+    const res = await fetch(`http://localhost:3000/api/tables/${tableId}`, {
+      headers: {
+        Authorization: localStorage.getItem('token')
+      }
+    });
+
+    if (res.ok) {
+      const table = await res.json();
+      document.getElementById('tableTitle').textContent = table.title;
+    } else {
+      document.getElementById('tableTitle').textContent = 'Event not found';
+    }
+  });
+</script>
+</body>
+</html>

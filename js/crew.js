@@ -48,6 +48,20 @@ function renderTableSection() {
     wrapper.className = 'table-wrapper';
 
     const table = document.createElement('table');
+    table.style.tableLayout = 'fixed';
+    table.style.width = '100%';
+    table.innerHTML = `
+      <colgroup>
+        <col style="width: 20%;">  <!-- Role -->
+        <col style="width: 25%;">  <!-- Name -->
+        <col style="width: 8%;">   <!-- Start -->
+        <col style="width: 8%;">   <!-- End -->
+        <col style="width: 8%;">   <!-- Total Hours -->
+        <col style="width: 20%;">  <!-- Notes -->
+        <col style="width: 11%;">  <!-- Action -->
+      </colgroup>
+    `;
+
     const thead = document.createElement('thead');
     thead.innerHTML = `
       <tr>
@@ -73,7 +87,7 @@ function renderTableSection() {
           <td>${row.endTime}</td>
           <td>${row.totalHours}</td>
           <td>${row.notes}</td>
-          <td><button onclick="deleteRow('${date}', ${index}')">Delete</button></td>
+          <td><button onclick="deleteRow('${date}', ${index})">Delete</button></td>
         `;
         tbody.appendChild(tr);
       });
@@ -97,6 +111,7 @@ function renderTableSection() {
     container.appendChild(sectionBox);
   });
 }
+
 
 
 function showRowInputs(date, tbody) {

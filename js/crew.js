@@ -34,16 +34,18 @@ function renderTableSection() {
 
   const dates = [...new Set(tableData.rows.map(row => row.date))];
   dates.forEach(date => {
-    const section = document.createElement('div');
+    const sectionBox = document.createElement('div');
+    sectionBox.className = 'date-section';
+
     const header = document.createElement('h2');
-    const formattedDate = new Date(date).toLocaleDateString('en-US', {
+    header.textContent = new Date(date).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
     });
-    header.textContent = formattedDate;
-    
-    section.appendChild(header);
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'table-wrapper';
 
     const table = document.createElement('table');
     const thead = document.createElement('thead');
@@ -71,7 +73,7 @@ function renderTableSection() {
           <td>${row.endTime}</td>
           <td>${row.totalHours}</td>
           <td>${row.notes}</td>
-          <td><button onclick="deleteRow('${date}', ${index})">Delete</button></td>
+          <td><button onclick="deleteRow('${date}', ${index}')">Delete</button></td>
         `;
         tbody.appendChild(tr);
       });
@@ -80,6 +82,7 @@ function renderTableSection() {
     const actionTd = document.createElement('td');
     actionTd.colSpan = 7;
     const addBtn = document.createElement('button');
+    addBtn.className = 'add-row-btn';
     addBtn.textContent = 'Add Row';
     addBtn.onclick = () => showRowInputs(date, tbody);
     actionTd.appendChild(addBtn);
@@ -87,10 +90,14 @@ function renderTableSection() {
     tbody.appendChild(actionRow);
 
     table.appendChild(tbody);
-    section.appendChild(table);
-    container.appendChild(section);
+    wrapper.appendChild(table);
+
+    sectionBox.appendChild(header);
+    sectionBox.appendChild(wrapper);
+    container.appendChild(sectionBox);
   });
 }
+
 
 function showRowInputs(date, tbody) {
   const inputRow = document.createElement('tr');

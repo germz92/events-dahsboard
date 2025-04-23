@@ -9,17 +9,17 @@ if (!tableId) {
 
 function addContactRow(contact = {}) {
   const container = document.getElementById('contactRows');
-  const row = document.createElement('div');
-  row.className = 'contact-row';
+  const row = document.createElement('tr');
   row.innerHTML = `
-    <input name="contactName" placeholder="Name" value="${contact.name || ''}" />
-    <input name="contactNumber" placeholder="Number" value="${contact.number || ''}" />
-    <input name="contactEmail" placeholder="E-Mail Address" value="${contact.email || ''}" />
-    <input name="contactRole" placeholder="Role" value="${contact.role || ''}" />
-    <button type="button" onclick="this.parentElement.remove()" style="background:#e74c3c; color:white; border:none; border-radius:4px; padding:6px 10px; cursor:pointer;">🗑</button>
+    <td><input name="contactName" placeholder="Name" value="${contact.name || ''}" /></td>
+    <td><input name="contactNumber" placeholder="Number" value="${contact.number || ''}" /></td>
+    <td><input name="contactEmail" placeholder="E-Mail Address" value="${contact.email || ''}" /></td>
+    <td><input name="contactRole" placeholder="Role" value="${contact.role || ''}" /></td>
+    <td><button type="button" class="delete-btn" onclick="this.closest('tr').remove()">🗑</button></td>
   `;
   container.appendChild(row);
 }
+
 
 async function loadGeneralInfo() {
   const res = await fetch(`${API_BASE}/api/tables/${tableId}/general`, {

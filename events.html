@@ -14,28 +14,48 @@
       margin-top: 20px;
     }
     .table-card {
-      background: #ffffff;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 20px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
     }
+
     .table-card h3 {
       margin: 0;
+      font-size: 1.2rem;
+      font-weight: bold;
     }
-    .table-card button {
-      margin-left: 10px;
+
     }
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .action-buttons button {
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      color: white;
+    }
+    .action-buttons button:nth-child(1) {
+      background-color: #007BFF; /* Open */
+    }
+    .action-buttons button:nth-child(2) {
+      background-color: #dc3545; /* Delete */
+    }
+    .action-buttons button:nth-child(3) {
+      background-color: #17a2b8; /* Share */
+    }
+
     .modal {
       display: none;
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
       background: rgba(0, 0, 0, 0.5);
       justify-content: center;
       align-items: center;
@@ -54,29 +74,22 @@
       margin-bottom: 10px;
       box-sizing: border-box;
     }
-    .modal-content button {
-      padding: 8px 12px;
-    }
   </style>
 </head>
 <body>
   <div class="dashboard-container">
-    <!-- 🧑 Username greeting + logout -->
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
       <h2 id="usernameDisplay">Welcome</h2>
       <button onclick="logout()" style="padding: 8px 16px; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;">Logout</button>
     </div>
 
-    <!-- ➕ Event creation -->
     <input id="tableTitle" placeholder="Table Title">
     <button onclick="createTable()">Create</button>
 
-    <!-- 🗂️ Event list -->
     <h2>Your Events</h2>
     <div id="tableList" class="table-cards"></div>
   </div>
 
-  <!-- Modal -->
   <div id="shareModal" class="modal">
     <div class="modal-content">
       <h3>Share Event</h3>
@@ -125,6 +138,9 @@
         const title = document.createElement('h3');
         title.textContent = table.title;
 
+        const actions = document.createElement('div');
+        actions.className = 'action-buttons';
+
         const openBtn = document.createElement('button');
         openBtn.textContent = 'Open';
         openBtn.onclick = () => {
@@ -150,13 +166,8 @@
           document.getElementById('shareModal').style.display = 'flex';
         };
 
-        const actions = document.createElement('div');
-        actions.appendChild(openBtn);
-        actions.appendChild(deleteBtn);
-        actions.appendChild(shareBtn);
-
-        card.appendChild(title);
-        card.appendChild(actions);
+        actions.append(openBtn, deleteBtn, shareBtn);
+        card.append(title, actions);
         list.appendChild(card);
       });
     }
@@ -182,13 +193,13 @@
       closeModal();
     }
 
-    loadTables();
-
     function logout() {
       localStorage.removeItem('username');
       localStorage.removeItem('token');
       window.location.href = 'login.html';
     }
+
+    loadTables();
   </script>
 </body>
 </html>

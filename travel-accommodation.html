@@ -6,19 +6,22 @@
   <title>Travel and Accommodation</title>
   <link rel="stylesheet" href="css/styles.css">
   <style>
-    body {
-      background: #f5f7fa;
+    html, body {
+      margin: 0;
+      padding: 0;
       font-family: 'Segoe UI', sans-serif;
-      padding: 40px;
+      background: #f5f7fa;
       color: #333;
+      overflow-x: hidden;
     }
 
     .section {
       background: white;
       border-radius: 16px;
       padding: 24px;
-      margin-bottom: 40px;
+      margin: 20px auto;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      max-width: 100%;
     }
 
     .section h2 {
@@ -29,78 +32,95 @@
 
     .table-wrapper {
       overflow-x: auto;
+      width: 100%;
     }
 
     table {
+      min-width: 720px;
       width: 100%;
-      min-width: 600px;
       border-collapse: separate;
       border-spacing: 0 8px;
-      margin-top: 16px;
+    }
+
+    th, td {
+      padding: 8px 12px;
+      background: #f1f3f6;
+      font-size: 14px;
+      text-align: left;
+      white-space: nowrap;
     }
 
     th {
       background: #e0e0e0;
       color: black;
-      padding: 12px;
-      text-align: left;
       border-radius: 8px 8px 0 0;
-      font-size: 0.95rem;
     }
 
-    td {
-      padding: 8px;
-      background: #f1f3f6;
-      border-radius: 6px;
+    td.date, th.date,
+    td.time, th.time {
+      width: 90px;
     }
 
-    table tr td input,
-    table tr td button {
-      width: 100%;
-      box-sizing: border-box;
+    td.text, th.text {
+      width: 160px;
+    }
+
+    td.action, th.action {
+      width: 40px;
+      text-align: center;
     }
 
     input[type="text"], input[type="date"], input[type="time"] {
-      padding: 8px 10px;
-      border: 1px solid #ccc;
+      padding: 6px 8px;
+      font-size: 14px;
+      width: 100%;
       border-radius: 6px;
-      background: white;
-      font-size: 0.95rem;
-      color: #333;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
     }
 
     .add-btn {
       background: #3f51b5;
       color: white;
-      border: none;
       padding: 10px 16px;
+      border: none;
       border-radius: 6px;
+      margin-top: 10px;
+      font-weight: bold;
       cursor: pointer;
-      margin-top: 16px;
-      font-weight: 600;
-    }
-
-    .add-btn:hover {
-      background: #2c3ea8;
     }
 
     .delete-btn {
       background: transparent;
       border: none;
-      font-size: 1.1rem;
+      font-size: 1rem;
       color: #888;
       cursor: pointer;
+      padding: 0;
     }
 
     .delete-btn:hover {
       color: #d32f2f;
     }
+
+    @media (max-width: 768px) {
+      th, td {
+        font-size: 12px;
+        padding: 6px;
+      }
+      input[type="text"],
+      input[type="date"],
+      input[type="time"] {
+        font-size: 12px;
+        padding: 5px;
+      }
+    }
   </style>
   <script src="js/config.js"></script>
 </head>
 <body>
-  <button onclick="goBack()" style="margin-bottom: 20px; background: #ccc; padding: 10px 16px; border-radius: 6px; border: none; cursor: pointer;">⬅ Back</button>
-  <h1 id="eventTitle" style="text-align: center; margin-bottom: 40px;"></h1>
+  <button onclick="goBack()" style="margin: 20px; background: #ccc; padding: 10px 16px; border-radius: 6px; border: none;">⬅ Back</button>
+  <h1 id="eventTitle" style="text-align: center;"></h1>
 
   <div class="section">
     <h2>Travel</h2>
@@ -108,12 +128,12 @@
       <table id="travelTable">
         <thead>
           <tr>
-            <th>Date</th>
-            <th>Time</th>
-            <th>Airline</th>
-            <th>Name</th>
-            <th>Ref Number</th>
-            <th></th>
+            <th class="date">Date</th>
+            <th class="time">Time</th>
+            <th class="text">Airline</th>
+            <th class="text">Name</th>
+            <th class="text">Ref Number</th>
+            <th class="action"></th>
           </tr>
         </thead>
         <tbody></tbody>
@@ -128,12 +148,12 @@
       <table id="accommodationTable">
         <thead>
           <tr>
-            <th>Date</th>
-            <th>Time</th>
-            <th>Hotel</th>
-            <th>Name</th>
-            <th>Ref Number</th>
-            <th></th>
+            <th class="date">Date</th>
+            <th class="time">Time</th>
+            <th class="text">Hotel</th>
+            <th class="text">Name</th>
+            <th class="text">Ref Number</th>
+            <th class="action"></th>
           </tr>
         </thead>
         <tbody></tbody>
@@ -162,12 +182,12 @@
       rows.forEach(item => {
         const row = document.createElement("tr");
         row.innerHTML = `
-          <td><input type="date" value="${item.date || ''}"></td>
-          <td><input type="time" value="${item.time || ''}"></td>
-          <td><input type="text" value="${item.airline || item.hotel || ''}"></td>
-          <td><input type="text" value="${item.name || ''}"></td>
-          <td><input type="text" value="${item.ref || ''}"></td>
-          <td><button class="delete-btn" onclick="removeRow(this)">🗑</button></td>
+          <td class="date"><input type="date" value="${item.date || ''}"></td>
+          <td class="time"><input type="time" value="${item.time || ''}"></td>
+          <td class="text"><input type="text" value="${item.airline || item.hotel || ''}"></td>
+          <td class="text"><input type="text" value="${item.name || ''}"></td>
+          <td class="text"><input type="text" value="${item.ref || ''}"></td>
+          <td class="action"><button class="delete-btn" onclick="removeRow(this)">🗑</button></td>
         `;
         table.appendChild(row);
       });
@@ -175,15 +195,15 @@
 
     function addRow(tableId) {
       const table = document.getElementById(tableId).querySelector("tbody");
-      const row = document.createElement("tr");
       const isTravel = tableId === 'travelTable';
+      const row = document.createElement("tr");
       row.innerHTML = `
-        <td><input type="date"></td>
-        <td><input type="time"></td>
-        <td><input type="text" placeholder="${isTravel ? 'Airline' : 'Hotel'}"></td>
-        <td><input type="text" placeholder="Name"></td>
-        <td><input type="text" placeholder="Ref #"></td>
-        <td><button class="delete-btn" onclick="removeRow(this)">🗑</button></td>
+        <td class="date"><input type="date"></td>
+        <td class="time"><input type="time"></td>
+        <td class="text"><input type="text" placeholder="${isTravel ? 'Airline' : 'Hotel'}"></td>
+        <td class="text"><input type="text" placeholder="Name"></td>
+        <td class="text"><input type="text" placeholder="Ref #"></td>
+        <td class="action"><button class="delete-btn" onclick="removeRow(this)">🗑</button></td>
       `;
       table.appendChild(row);
     }
@@ -205,7 +225,7 @@
     async function saveData() {
       const travelRows = collectTableData('travelTable');
       const accommodationRows = collectTableData('accommodationTable');
-      const res = await fetch(`${API_BASE}/api/tables/${tableId}/travel`, {
+      await fetch(`${API_BASE}/api/tables/${tableId}/travel`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -213,12 +233,6 @@
         },
         body: JSON.stringify({ travel: travelRows, accommodation: accommodationRows })
       });
-
-      if (!res.ok) {
-        const error = await res.json();
-        console.error('Failed to save:', error);
-        alert('Failed to save data.');
-      }
     }
 
     window.addEventListener("DOMContentLoaded", async () => {
@@ -232,9 +246,7 @@
       await loadData();
     });
 
-    window.addEventListener("beforeunload", () => {
-      saveData();
-    });
+    window.addEventListener("beforeunload", saveData);
 
     function removeRow(button) {
       const row = button.closest('tr');

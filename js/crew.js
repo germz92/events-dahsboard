@@ -53,12 +53,12 @@ function renderTableSection() {
     table.innerHTML = `
       <colgroup>
         <col style="width: 20%;">  <!-- Role -->
-        <col style="width: 25%;">  <!-- Name -->
-        <col style="width: 8%;">   <!-- Start -->
-        <col style="width: 8%;">   <!-- End -->
+        <col style="width: 26%;">  <!-- Name -->
+        <col style="width: 10%;">   <!-- Start -->
+        <col style="width: 10%;">   <!-- End -->
         <col style="width: 8%;">   <!-- Total Hours -->
         <col style="width: 20%;">  <!-- Notes -->
-        <col style="width: 11%;">  <!-- Action -->
+        <col style="width: 6%;">  <!-- Action -->
       </colgroup>
     `;
 
@@ -87,7 +87,8 @@ function renderTableSection() {
           <td>${row.endTime}</td>
           <td>${row.totalHours}</td>
           <td>${row.notes}</td>
-          <td><button onclick="deleteRow('${date}', ${index})">Delete</button></td>
+          <td><button onclick="deleteRow('${date}', ${index}')" title="Delete" style="background: transparent; border: none; font-size: 16px; cursor: pointer;">🗑</button></td>
+
         `;
         tbody.appendChild(tr);
       });

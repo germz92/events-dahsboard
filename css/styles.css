@@ -114,14 +114,14 @@ table select {
 
 /* Auth / dashboard components */
 .dashboard-container {
-  max-width: 600px;
-  margin: 60px auto;
-  background: white;
+  max-width: 100%;
+  width: 100%;
   padding: 30px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  text-align: center;
+  margin: 0 auto;
+  box-sizing: border-box;
+  align-items: center; /* 🔧 this ensures content is centered */
 }
+
 
 .event-links {
   display: flex;
@@ -131,13 +131,18 @@ table select {
 }
 
 .event-links a {
-  padding: 12px 20px;
+  display: inline-block;
+  padding: 10px 16px;
+  margin: 5px;
   background-color: #007BFF;
   color: white;
   text-decoration: none;
   border-radius: 6px;
   font-weight: bold;
-  transition: background 0.2s;
+  transition: background 0.2s ease-in-out;
+  width: auto;               /* prevent full width */
+  max-width: 200px;          /* optional width limit */
+  text-align: center;
 }
 
 .event-links a:hover {
@@ -227,4 +232,13 @@ table select {
 #contactRows .contact-row td {
   padding: 4px 8px;
   background: #f9f9f9;
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 10px;
 }

@@ -19,8 +19,8 @@
       padding: 40px;
       border-radius: 12px;
       box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-      max-width: 1200px;
-      margin: 40px auto;
+      max-width: 100%;
+      align-items: center;
     }
 
     .top-bar {
@@ -47,7 +47,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
+      margin-bottom: 10px;
       flex-wrap: wrap;
     }
 
@@ -70,6 +70,7 @@
       flex-wrap: wrap;
       gap: 20px;
       justify-content: center; /* ✅ Center the cards */
+      align-items: center;
 }
 
     .table-card {
@@ -79,9 +80,10 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.1);
       display: flex;
       flex-direction: column;
-      gap: 10px;
       width: 300px;
+      max-height: 100px;
       flex: 0 1 300px;
+      justify-content: center; /* ✅ Center the cards */
     }
 
     .event-header {

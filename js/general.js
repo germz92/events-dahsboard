@@ -40,14 +40,29 @@ async function loadGeneralInfo() {
 
 async function saveGeneralInfo() {
   const form = document.getElementById('generalForm');
-  const contacts = Array.from(document.querySelectorAll('#contactRows .contact-row')).map(row => {
-    const fields = row.querySelectorAll('input');
-    return {
-      name: fields[0].value,
-      number: fields[1].value,
-      email: fields[2].value,
-      role: fields[3].value
-    };
+  const container = document.getElementById('contactRows');
+  const allRows = container.querySelectorAll('tr');
+
+  const contacts = Array.from(allRows).map(row => {
+    const inputs = row.querySelectorAll('input');
+    if (inputs.length === 0) {
+      // Read-only row
+      const cells = row.querySelectorAll('td');
+      return {
+        name: cells[0]?.textContent.trim(),
+        number: cells[1]?.textContent.trim(),
+        email: cells[2]?.textContent.trim(),
+        role: cells[3]?.textContent.trim()
+      };
+    } else {
+      // Editable input row
+      return {
+        name: inputs[0].value,
+        number: inputs[1].value,
+        email: inputs[2].value,
+        role: inputs[3].value
+      };
+    }
   });
 
   const general = {

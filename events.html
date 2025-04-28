@@ -201,8 +201,9 @@
       window.location.href = 'login.html';
     }
 
-    const username = localStorage.getItem('username') || 'User';
-    document.getElementById('usernameDisplay').textContent = `Welcome, ${username}`;
+    const fullName = localStorage.getItem('fullName') || 'User';
+    document.getElementById('usernameDisplay').textContent = `Welcome, ${fullName}`;
+
 
     let currentTableId = null;
 
@@ -328,10 +329,11 @@
     }
 
     function logout() {
-      localStorage.removeItem('username');
-      localStorage.removeItem('token');
-      window.location.href = 'login.html';
-    }
+  localStorage.removeItem('fullName'); // 🔥 remove fullName now
+  localStorage.removeItem('token');
+  window.location.href = 'login.html';
+}
+
 
     loadTables();
   </script>

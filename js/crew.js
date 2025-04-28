@@ -182,16 +182,20 @@ async function populateUserDropdown() {
   });
   const users = await res.json();
 
+  // 🔥 Sort alphabetically by fullName
+  users.sort((a, b) => (a.fullName || '').localeCompare(b.fullName || ''));
+
   document.querySelectorAll('.user-select').forEach(select => {
     select.innerHTML = '<option value="">Select Name</option>';
     users.forEach(user => {
       const option = document.createElement('option');
-      option.value = user.username;
-      option.textContent = user.username;
+      option.value = user.fullName || user.email; // fallback
+      option.textContent = user.fullName || user.email;
       select.appendChild(option);
     });
   });
 }
+
 
 async function deleteRow(date, index) {
   const rowsForDate = tableData.rows.filter(row => row.date === date);

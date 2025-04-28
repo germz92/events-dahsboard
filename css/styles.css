@@ -242,3 +242,41 @@ table select {
   flex-wrap: wrap;
   margin-top: 10px;
 }
+@media (max-width: 768px) {
+  body {
+  padding: 5px 8px;
+  }
+  
+  table {
+  max-width: 100%;
+  font-size: 14px;
+  }
+  
+  th, td {
+  padding: 8px;
+  font-size: 12px;
+  }
+  
+  h2 {
+  font-size: 16px;
+  }
+  
+  .back-btn {
+  padding: 8px 12px;
+  font-size: 14px;
+  }
+  
+  button {
+  padding: 5px 8px;
+  font-size: 12px;
+  }
+  
+  .modal-content {
+  width: 95%;
+  }
+  
+  select, input[type="text"] {
+  font-size: 14px;
+  }
+  }
+  

@@ -76,16 +76,23 @@
       <a id="crewLink">Crew Call</a>
       <a id="travelLink">Travel and Accommodations</a>
       <a id="gearLink">Gear List</a>
+      <a id="cardLogLink">Card Log</a> <!-- ✅ new -->
     </nav>
   </div>
 
   <script>
     const params = new URLSearchParams(window.location.search);
     const tableId = params.get('id');
+
+    // ✅ Set hrefs for all links
     document.getElementById('crewLink').href = `crew.html?id=${tableId}`;
     document.getElementById('generalLink').href = `general.html?id=${tableId}`;
     document.getElementById('gearLink').href = `gear.html?id=${tableId}`;
     document.getElementById('travelLink').href = `travel-accommodation.html?id=${tableId}`;
+    document.getElementById('cardLogLink').href = `card-log.html?id=${tableId}`;
+
+    // ✅ Save eventId into localStorage so card-logger.js can pick it up
+    localStorage.setItem('eventId', tableId);
 
     document.addEventListener('DOMContentLoaded', async () => {
       const res = await fetch(`${API_BASE}/api/tables/${tableId}`, {

@@ -79,7 +79,6 @@ function addRow(date, entry = {}) {
   const tbody = document.getElementById(`tbody-${date}`);
   
   const row = document.createElement('tr');
-  row.style.position = 'relative'; // allow absolute inside
 
   const cameraOptions = [
     `<option value="" disabled selected>Select Camera</option>`,
@@ -108,16 +107,17 @@ function addRow(date, entry = {}) {
     <td data-label="User">
       <select>${userOptions}</select>
     </td>
-    <td data-label="Action" style="position: relative;">
+    <td data-label="Action">
       <button class="delete-row-btn" title="Delete Row" style="
-        position: absolute;
-        top: 5px;
-        right: 5px;
         background: transparent;
         border: none;
         font-size: 18px;
         cursor: pointer;
-        color: #d11a2a;">🗑️</button>
+        color: #d11a2a;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      ">🗑️</button>
     </td>
   `;
 

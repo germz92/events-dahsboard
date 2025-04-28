@@ -4,122 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Crew Call</title>
-  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/crew.css">
   <script src="js/config.js"></script>
-  <style>
-    body {
-      margin: 0;
-      padding: 0 !important;
-      font-family: 'Segoe UI', sans-serif;
-      background: #f5f7fa;
-      color: #333;
-      align-items: stretch !important;
-    }
-
-    h1 {
-      text-align: center;
-      margin: 10px 0;
-      font-size: 1.5rem;
-    }
-
-    .top-controls {
-      display: flex;
-      justify-content: center;
-      gap: 8px;
-      margin-bottom: 10px;
-    }
-
-      #newDate {
-      width: auto !important;
-      max-width: 200px;
-    }
-
-
-    .date-section {
-      background: white;
-      border-radius: 10px;
-      padding: 12px;
-      margin: 10px auto;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-      width: 95%;
-      max-width: 1000px;
-    }
-
-    .date-section h2 {
-      font-size: 1.1rem;
-      text-align: left;
-      padding-left: 4px;
-    }
-
-    .table-wrapper {
-      overflow-x: auto;
-    }
-
-    table {
-      width: 950px;
-      min-width: 950px;
-      border-collapse: collapse;
-      font-size: 13px;
-      table-layout: fixed;
-    }
-
-    th, td {
-      white-space: normal !important;
-      overflow: visible !important;
-      text-overflow: unset !important;
-      padding: 6px 8px;
-      font-size: 13px;
-      border: 1px solid #ddd;
-    }
-
-    th {
-      background-color: #e0e0e0;
-      text-align: left;
-    }
-
-    input, select {
-      width: 100% !important;
-      max-width: 100% !important;
-      box-sizing: border-box;
-      padding: 4px 6px;
-      font-size: 13px;
-    }
-
-    button {
-      padding: 6px 12px;
-      background-color: #007BFF;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 13px;
-    }
-
-    button:hover {
-      background-color: #0056b3;
-    }
-
-    .add-row-btn {
-      margin-top: 4px;
-    }
-
-    @media (max-width: 768px) {
-      h1 {
-        font-size: 1.2rem;
-      }
-      th, td {
-        font-size: 12px;
-        padding: 5px;
-      }
-      input, select {
-        font-size: 12px;
-      }
-    }
-  </style>
 </head>
 <body>
   <button onclick="goBack()" style="margin: 12px; background: #ccc;">⬅ Back</button>
   <h1 id="tableTitle">Crew Call</h1>
+  <h1>Crew Call</h1>
 
   <div class="top-controls">
     <input type="date" id="newDate">

@@ -4,8 +4,6 @@ const token = localStorage.getItem('token');
 let tableData = null;
 
 function goBack() {
-  const params = new URLSearchParams(window.location.search);
-  const tableId = params.get('id');
   window.location.href = `event.html?id=${tableId}`;
 }
 
@@ -17,6 +15,13 @@ function calculateHours(start, end) {
   const endDate = new Date(0, 0, 0, eh, em);
   const diff = (endDate - startDate) / (1000 * 60 * 60);
   return Math.max(diff.toFixed(2), 0);
+}
+function formatTime(timeStr) {
+  if (!timeStr) return '';
+  const [hour, minute] = timeStr.split(':').map(Number);
+  const ampm = hour >= 12 ? 'PM' : 'AM';
+  const adjustedHour = hour % 12 || 12; // 0 → 12
+  return `${adjustedHour}:${minute.toString().padStart(2, '0')} ${ampm}`;
 }
 
 async function loadTable() {
@@ -37,12 +42,30 @@ function renderTableSection() {
     const sectionBox = document.createElement('div');
     sectionBox.className = 'date-section';
 
+    const headerWrapper = document.createElement('div');
+    headerWrapper.style.display = 'flex';
+    headerWrapper.style.alignItems = 'center';
+    headerWrapper.style.justifyContent = 'space-between';
+    headerWrapper.style.marginBottom = '8px';
+
     const header = document.createElement('h2');
     header.textContent = new Date(date).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
     });
+
+    const deleteDateBtn = document.createElement('button');
+    deleteDateBtn.textContent = '🗑️';
+    deleteDateBtn.style.background = 'transparent';
+    deleteDateBtn.style.border = 'none';
+    deleteDateBtn.style.cursor = 'pointer';
+    deleteDateBtn.style.fontSize = '18px';
+    deleteDateBtn.title = 'Delete Date';
+    deleteDateBtn.onclick = () => deleteDate(date);
+
+    headerWrapper.appendChild(header);
+    headerWrapper.appendChild(deleteDateBtn);
 
     const wrapper = document.createElement('div');
     wrapper.className = 'table-wrapper';
@@ -52,12 +75,12 @@ function renderTableSection() {
     table.style.width = '100%';
     table.innerHTML = `
       <colgroup>
-        <col style="width: 20%;">  <!-- Role -->
-        <col style="width: 26%;">  <!-- Name -->
-        <col style="width: 10%;">   <!-- Start -->
-        <col style="width: 10%;">   <!-- End -->
-        <col style="width: 8%;">   <!-- Total Hours -->
-        <col style="width: 20%;">  <!-- Notes -->
+        <col style="width: 26%;"> <!-- Name -->
+        <col style="width: 10%;"> <!-- Start -->
+        <col style="width: 10%;"> <!-- End -->
+        <col style="width: 8%;">  <!-- Total Hours -->
+        <col style="width: 20%;"> <!-- Role -->
+        <col style="width: 20%;"> <!-- Notes -->
         <col style="width: 6%;">  <!-- Action -->
       </colgroup>
     `;
@@ -65,11 +88,11 @@ function renderTableSection() {
     const thead = document.createElement('thead');
     thead.innerHTML = `
       <tr>
-        <th>Role</th>
         <th>Name</th>
         <th>Start</th>
         <th>End</th>
         <th>Total Hours</th>
+        <th>Role</th>
         <th>Notes</th>
         <th>Action</th>
       </tr>`;
@@ -81,14 +104,13 @@ function renderTableSection() {
       .forEach((row, index) => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td>${row.role}</td>
           <td>${row.name}</td>
-          <td>${row.startTime}</td>
-          <td>${row.endTime}</td>
+          <td>${formatTime(row.startTime)}</td>
+          <td>${formatTime(row.endTime)}</td>
           <td>${row.totalHours}</td>
+          <td>${row.role}</td>
           <td>${row.notes}</td>
-          <td><button onclick="deleteRow('${date}', ${index}')" title="Delete" style="background: transparent; border: none; font-size: 16px; cursor: pointer;">🗑</button></td>
-
+          <td style="text-align: center;"><button onclick="deleteRow('${date}', ${index})" title="Delete" style="background: transparent; border: none; font-size: 18px; cursor: pointer;">🗑️</button></td>
         `;
         tbody.appendChild(tr);
       });
@@ -107,17 +129,19 @@ function renderTableSection() {
     table.appendChild(tbody);
     wrapper.appendChild(table);
 
-    sectionBox.appendChild(header);
+    sectionBox.appendChild(headerWrapper);
     sectionBox.appendChild(wrapper);
     container.appendChild(sectionBox);
   });
 }
 
-
-
 function showRowInputs(date, tbody) {
   const inputRow = document.createElement('tr');
   inputRow.innerHTML = `
+    <td><select id='name-${date}' class='user-select'></select></td>
+    <td><input type='time' step='900' id='start-${date}'></td>
+    <td><input type='time' step='900' id='end-${date}'></td>
+    <td><input id='hours-${date}' disabled></td>
     <td><select id='role-${date}'>
       <option value="">Select Role</option>
       <option value="Lead Photographer">Lead Photographer</option>
@@ -127,10 +151,6 @@ function showRowInputs(date, tbody) {
       <option value="Headshot Booth Photographer">Headshot Booth Photographer</option>
       <option value="Assistant">Assistant</option>
     </select></td>
-    <td><select id='name-${date}' class='user-select'></select></td>
-    <td><input type='time' step='900' id='start-${date}'></td>
-    <td><input type='time' step='900' id='end-${date}'></td>
-    <td><input id='hours-${date}' disabled></td>
     <td><input id='notes-${date}'></td>
     <td><button onclick="addRowToDate('${date}')">Save</button></td>
   `;
@@ -176,27 +196,6 @@ async function addRowToDate(date) {
   await loadTable();
 }
 
-async function populateUserDropdown() {
-  const res = await fetch(`${API_BASE}/api/users`, {
-    headers: { Authorization: token }
-  });
-  const users = await res.json();
-
-  // 🔥 Sort alphabetically by fullName
-  users.sort((a, b) => (a.fullName || '').localeCompare(b.fullName || ''));
-
-  document.querySelectorAll('.user-select').forEach(select => {
-    select.innerHTML = '<option value="">Select Name</option>';
-    users.forEach(user => {
-      const option = document.createElement('option');
-      option.value = user.fullName || user.email; // fallback
-      option.textContent = user.fullName || user.email;
-      select.appendChild(option);
-    });
-  });
-}
-
-
 async function deleteRow(date, index) {
   const rowsForDate = tableData.rows.filter(row => row.date === date);
   const globalIndex = tableData.rows.findIndex((row, i) => row === rowsForDate[index]);
@@ -211,6 +210,42 @@ async function deleteRow(date, index) {
   } else {
     alert('Failed to delete row');
   }
+}
+
+async function deleteDate(date) {
+  if (!confirm('Delete this entire day?')) return;
+
+  tableData.rows = tableData.rows.filter(row => row.date !== date);
+
+  await fetch(`${API_BASE}/api/tables/${tableId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: token
+    },
+    body: JSON.stringify({ rows: tableData.rows })
+  });
+
+  await loadTable();
+}
+
+async function populateUserDropdown() {
+  const res = await fetch(`${API_BASE}/api/users`, {
+    headers: { Authorization: token }
+  });
+  const users = await res.json();
+
+  users.sort((a, b) => (a.fullName || '').localeCompare(b.fullName || ''));
+
+  document.querySelectorAll('.user-select').forEach(select => {
+    select.innerHTML = '<option value="">Select Name</option>';
+    users.forEach(user => {
+      const option = document.createElement('option');
+      option.value = user.fullName || user.email;
+      option.textContent = user.fullName || user.email;
+      select.appendChild(option);
+    });
+  });
 }
 
 loadTable();

@@ -48,9 +48,9 @@ function addDaySection(date, entries = []) {
     <table>
       <colgroup>
         <col style="width: 25%;">
-        <col style="width: 17%;">
-        <col style="width: 17%;">
-        <col style="width: 29%;">
+        <col style="width: 15%;">
+        <col style="width: 15%;">
+        <col style="width: 33%;">
         <col style="width: 12%;">  <!-- 🗑️ Trash button -->
       </colgroup>
       <thead>

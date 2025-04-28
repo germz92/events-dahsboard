@@ -19,6 +19,10 @@
       text-align: center;
     }
 
+    h1 {
+    font-size: 26px;
+}
+
     .gear-container {
       display: flex;
       flex-wrap: wrap;
@@ -56,6 +60,7 @@
       border: 1px solid #ccc;
       border-radius: 6px;
       font-size: 0.95rem;
+      width: 90%;
     }
 
     .item input[type="checkbox"] {
@@ -100,7 +105,7 @@
 <body class="gear-page">
 
   <button onclick="goBack()" style="margin-bottom: 20px; background: #ccc; padding: 10px 16px; border-radius: 6px; border: none; cursor: pointer;">⬅ Back</button>
-  <h2 id="eventTitle" style="margin-bottom: 30px;"></h2>
+  <h2 id="eventTitle" style="margin-bottom: 10px;"></h2>
   <h1>Gear Checklist</h1>
   <div class="gear-container" id="gearContainer"></div>
 
@@ -110,20 +115,22 @@
     const params = new URLSearchParams(window.location.search);
     const tableId = params.get('id');
     let savedGear = {};
-
+    let saveTimeout;
+  
     function goBack() {
       window.location.href = `event.html?id=${tableId}`;
     }
-
+  
     async function loadGear() {
       try {
         const res = await fetch(`${API_BASE}/api/tables/${tableId}/gear`, {
           headers: { Authorization: token }
         });
         if (!res.ok) throw new Error("Failed to fetch gear");
-
-        savedGear = await res.json();
-
+  
+        const data = await res.json();
+        savedGear = data || {};
+  
         const eventRes = await fetch(`${API_BASE}/api/tables/${tableId}`, {
           headers: { Authorization: token }
         });
@@ -131,65 +138,88 @@
           const table = await eventRes.json();
           document.getElementById('eventTitle').textContent = table.title;
         }
-
+  
         categories.forEach(createCategory);
       } catch (err) {
         console.error("Error loading gear:", err);
         document.body.innerHTML = "<h2 style='text-align:center;color:red;'>Failed to load gear data.</h2>";
       }
     }
-
+  
     function createCategory(name) {
       const section = document.createElement("div");
       section.className = "category";
       section.innerHTML = `<h3>${name}</h3><div class="item-list"></div>`;
       const list = section.querySelector(".item-list");
-
+  
       (savedGear[name] || []).forEach(item => {
         const el = document.createElement("div");
         el.className = "item";
         el.innerHTML = `<input type='checkbox' ${item.checked ? 'checked' : ''}><input type='text' value="${item.label}" />`;
         list.appendChild(el);
       });
-
+  
       const addBtn = document.createElement("button");
       addBtn.className = "add-btn";
       addBtn.textContent = "+ Add Item";
       addBtn.onclick = () => {
         const row = document.createElement("div");
         row.className = "item";
-        row.innerHTML = "<input type='checkbox'><input type='text' />";
+        row.innerHTML = "<input type='checkbox'><input type='text'>";
         list.appendChild(row);
+        triggerAutosave();
       };
-
+  
       section.appendChild(addBtn);
       document.getElementById("gearContainer").appendChild(section);
     }
-
-    async function saveGear() {
+  
+    function collectGearData() {
       const data = {};
       document.querySelectorAll(".category").forEach(section => {
         const name = section.querySelector("h3").textContent;
-        const items = Array.from(section.querySelectorAll(".item-list .item")).map(row => {
+        const items = Array.from(section.querySelectorAll(".item")).map(row => {
           const text = row.querySelector("input[type='text']").value.trim();
           const checked = row.querySelector("input[type='checkbox']").checked;
           return text ? { label: text, checked } : null;
         }).filter(Boolean);
         data[name] = items;
       });
-
+      return data;
+    }
+  
+    async function saveGear() {
+      const gearData = collectGearData();
+  
       await fetch(`${API_BASE}/api/tables/${tableId}/gear`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           Authorization: token
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify({ gear: gearData })  // ✅ server expects { gear: { ... } }
       });
     }
-
+  
+    function triggerAutosave() {
+      clearTimeout(saveTimeout);
+      saveTimeout = setTimeout(saveGear, 500);
+    }
+  
+    window.addEventListener("DOMContentLoaded", async () => {
+      await loadGear();
+  
+      document.getElementById('gearContainer').addEventListener('input', () => {
+        triggerAutosave();
+      });
+  
+      document.getElementById('gearContainer').addEventListener('change', () => {
+        triggerAutosave();
+      });
+    });
+  
     window.addEventListener("beforeunload", saveGear);
-    window.addEventListener("DOMContentLoaded", loadGear);
   </script>
+  
 </body>
 </html>

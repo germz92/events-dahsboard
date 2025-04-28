@@ -194,6 +194,7 @@ width: 95%;
 
 select, input[type="text"] {
 font-size: 14px;
+width: 100%;
 }
 }
 

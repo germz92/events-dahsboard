@@ -102,7 +102,7 @@ input#shareEmail {
   border: 1px solid #ccc;
   border-radius: 4px;
   display: inline-block;
-  font-size: 14px;
+  font-size: 16px;
   width: auto;
   max-width: 100%;
 }
@@ -111,7 +111,7 @@ input#shareEmail {
 table input,
 table select {
   height: 30px;
-  font-size: 13px;
+  font-size: 16px;
   padding: 4px 6px;
   box-sizing: border-box;
   width: 100%;
@@ -188,7 +188,7 @@ table select {
 
 .auth-card input {
   padding: 10px;
-  font-size: 14px;
+  font-size: 16px;
   border: 1px solid #ccc;
   border-radius: 5px;
 }
@@ -227,7 +227,7 @@ table select {
 
 #contactRows .contact-row input {
   padding: 6px 8px;
-  font-size: 14px;
+  font-size: 16px;
   border: 1px solid #ccc;
   border-radius: 6px;
   min-width: 120px;
@@ -255,7 +255,7 @@ table select {
   
   table {
   max-width: 100%;
-  font-size: 14px;
+  font-size: 16px;
   }
   
   th, td {

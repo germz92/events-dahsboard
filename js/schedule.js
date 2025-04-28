@@ -85,10 +85,10 @@ function renderProgramSections() {
         <input class="program-name" type="text" placeholder="Program Name" value="${program.name || ''}" 
           onfocus="enableEdit(this)" onblur="autoSave(this, '${date}', ${index}, 'name')">
         <div style="display:flex;align-items:center;gap:6px;">
-          <input type="time" value="${program.startTime || ''}" 
-            onfocus="enableEdit(this)" onblur="autoSave(this, '${date}', ${index}, 'startTime')">
-          <input type="time" value="${program.endTime || ''}" 
-            onfocus="enableEdit(this)" onblur="autoSave(this, '${date}', ${index}, 'endTime')">
+            <input type="text" placeholder="Start Time" value="${program.startTime || ''}" 
+            onfocus="this.type='time'; enableEdit(this);" onblur="autoSave(this, '${date}', ${index}, 'startTime')">
+            <input type="text" placeholder="End Time" value="${program.endTime || ''}" 
+            onfocus="this.type='time'; enableEdit(this);" onblur="autoSave(this, '${date}', ${index}, 'endTime')">
         </div>
         <div style="display:flex;align-items:center;margin-top:4px;">
           <span style="margin-right:6px;">📍</span>

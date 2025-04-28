@@ -76,7 +76,8 @@
       <a id="crewLink">Crew Call</a>
       <a id="travelLink">Travel and Accommodations</a>
       <a id="gearLink">Gear List</a>
-      <a id="cardLogLink">Card Log</a> <!-- ✅ new -->
+      <a id="cardLogLink">Card Log</a>
+      <a id="programScheduleLink">Schedule</a>
     </nav>
   </div>
 
@@ -90,8 +91,9 @@
     document.getElementById('gearLink').href = `gear.html?id=${tableId}`;
     document.getElementById('travelLink').href = `travel-accommodation.html?id=${tableId}`;
     document.getElementById('cardLogLink').href = `card-log.html?id=${tableId}`;
+    document.getElementById('programScheduleLink').href = `schedule.html?id=${tableId}`;
 
-    // ✅ Save eventId into localStorage so card-logger.js can pick it up
+    // ✅ Save eventId into localStorage so card-log.js can pick it up
     localStorage.setItem('eventId', tableId);
 
     document.addEventListener('DOMContentLoaded', async () => {

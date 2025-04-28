@@ -138,11 +138,14 @@ function renderTableSection() {
 function showRowInputs(date, tbody) {
   const inputRow = document.createElement('tr');
   inputRow.innerHTML = `
-    <td><select id='name-${date}' class='user-select'></select></td>
+    <td><select id='name-${date}' class='user-select'>
+      <option value="">Select Name</option>
+      <option value="__new__">+ Add New Name</option>
+    </select></td>
     <td><input type='time' step='900' id='start-${date}'></td>
     <td><input type='time' step='900' id='end-${date}'></td>
     <td><input id='hours-${date}' disabled></td>
-    <td><select id='role-${date}'>
+    <td><select id='role-${date}' class='role-select'>
       <option value="">Select Role</option>
       <option value="Lead Photographer">Lead Photographer</option>
       <option value="Additional Photographer">Additional Photographer</option>
@@ -150,12 +153,15 @@ function showRowInputs(date, tbody) {
       <option value="Additional Videographer">Additional Videographer</option>
       <option value="Headshot Booth Photographer">Headshot Booth Photographer</option>
       <option value="Assistant">Assistant</option>
+      <option value="__new__">+ Add New Role</option>
     </select></td>
     <td><input id='notes-${date}'></td>
     <td><button onclick="addRowToDate('${date}')">Save</button></td>
   `;
   tbody.insertBefore(inputRow, tbody.lastElementChild);
-  populateUserDropdown();
+  
+  populateUserDropdown(); // ⬅️ also sets up new name adding
+  setupRoleDropdown();    // ⬅️ set up new role adding
 }
 
 async function addDateSection() {
@@ -238,13 +244,52 @@ async function populateUserDropdown() {
   users.sort((a, b) => (a.fullName || '').localeCompare(b.fullName || ''));
 
   document.querySelectorAll('.user-select').forEach(select => {
-    select.innerHTML = '<option value="">Select Name</option>';
+    const currentValue = select.value;
+    select.innerHTML = `
+      <option value="">Select Name</option>
+      <option value="__new__">+ Add New Name</option>
+    `;
     users.forEach(user => {
       const option = document.createElement('option');
       option.value = user.fullName || user.email;
       option.textContent = user.fullName || user.email;
       select.appendChild(option);
     });
+    select.value = currentValue;
+
+    select.addEventListener('change', (e) => {
+      if (e.target.value === '__new__') {
+        const newName = prompt('Enter new name:');
+        if (newName) {
+          const option = document.createElement('option');
+          option.value = newName;
+          option.textContent = newName;
+          select.appendChild(option);
+          select.value = newName;
+        } else {
+          select.value = '';
+        }
+      }
+    }, { once: true });
+  });
+}
+
+function setupRoleDropdown() {
+  document.querySelectorAll('.role-select').forEach(select => {
+    select.addEventListener('change', (e) => {
+      if (e.target.value === '__new__') {
+        const newRole = prompt('Enter new role:');
+        if (newRole) {
+          const option = document.createElement('option');
+          option.value = newRole;
+          option.textContent = newRole;
+          select.appendChild(option);
+          select.value = newRole;
+        } else {
+          select.value = '';
+        }
+      }
+    }, { once: true });
   });
 }
 

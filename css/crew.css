@@ -1,31 +1,33 @@
 body {
     margin: 0;
-    padding: 0 !important;
+    padding: 0;
     font-family: 'Segoe UI', sans-serif;
     background: #f5f7fa;
     color: #333;
-    align-items: stretch !important;
+    overflow-x: hidden;
   }
-
+html{
+    overflow-x: hidden;
+}
+  
   h1 {
     text-align: center;
     margin: 10px 0;
     font-size: 1.5rem;
   }
-
+  
   .top-controls {
     display: flex;
     justify-content: center;
     gap: 8px;
     margin-bottom: 10px;
   }
-
-    #newDate {
-    width: auto !important;
+  
+  #newDate {
+    width: auto;
     max-width: 200px;
   }
-
-
+  
   .date-section {
     background: white;
     border-radius: 10px;
@@ -35,56 +37,69 @@ body {
     width: 100%;
     max-width: 1200px;
   }
-
+  
   .date-section h2 {
     font-size: 1.1rem;
     text-align: left;
     padding-left: 4px;
   }
-
+  
   .table-wrapper {
     overflow-x: auto;
+    border-radius: 10px;
   }
-
+  
   table {
-    width: 800px;
-    min-width: 800px;
-    border-collapse: collapse;
+    width: 100%;
+    min-width: 800px; /* Keep table from collapsing on desktop */
+    border-collapse: separate;
+    border-spacing: 0;
     font-size: 16px;
-    table-layout: auto; /* 🔥 fixed width columns */
-    width: 100%;         /* stretch to container */
+    table-layout: auto;
   }
+  
   th, td {
-  padding: 8px;
-  border: 1px solid #ddd;
-  white-space: normal;       /* 🔥 allow wrapping */
-  overflow-wrap: break-word; /* 🔥 break long words */
-  word-break: break-word;    /* 🔥 further guarantee wrapping */
-  vertical-align: top;       /* 🔥 text starts from the top */
-}
-
-td {
-  max-width: 150px; /* optional: prevent stretching */
-  /* DO NOT set fixed width per td otherwise wrapping can't happen */
-}
-
-colgroup col {
-  width: auto; /* still lets colgroup control */
-}
-
+    padding: 8px;
+    border: 1px solid #ddd;
+    white-space: normal;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    vertical-align: top;
+    background: white;
+  }
+  
+  td {
+    max-width: 150px;
+  }
+  
   th {
-    background-color: #e0e0e0;
+    background-color: #007bff;
+    color: white;
     text-align: left;
   }
-
+  
+  th:first-child {
+    border-top-left-radius: 10px;
+  }
+  
+  th:last-child {
+    border-top-right-radius: 10px;
+  }
+  
+  /* Fix corner rounding for scrolling containers */
+  .table-wrapper table {
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  
   input, select {
-    width: 100% !important;
-    max-width: 100% !important;
+    width: 100%;
+    max-width: 100%;
     box-sizing: border-box;
     padding: 4px 6px;
     font-size: 16px;
   }
-
+  
   button {
     padding: 6px 12px;
     background-color: #007BFF;
@@ -94,50 +109,61 @@ colgroup col {
     cursor: pointer;
     font-size: 16px;
   }
-
+  
   button:hover {
     background-color: #0056b3;
   }
-
+  
   .add-row-btn {
     margin-top: 4px;
   }
-
+  
+  /* Optional: prettier mobile scrolling */
+  .table-wrapper::-webkit-scrollbar {
+    height: 8px;
+  }
+  .table-wrapper::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 4px;
+  }
+  .table-wrapper::-webkit-scrollbar-thumb:hover {
+    background: #aaa;
+  }
+  
   @media (max-width: 768px) {
     body {
-    padding: 5px 8px;
+      padding: 5px 8px;
     }
-    
+  
     table {
-    max-width: 100%;
-    font-size: 16px;
+      font-size: 16px;
     }
-    
+  
     th, td {
-    padding: 8px;
-    font-size: 16px;
+      padding: 8px;
+      font-size: 16px;
     }
-    
+  
     h2 {
-    font-size: 16px;
+      font-size: 16px;
     }
-    
+  
     .back-btn {
-    padding: 8px 12px;
-    font-size: 16px;
+      padding: 8px 12px;
+      font-size: 16px;
     }
-    
+  
     button {
-    padding: 5px 8px;
-    font-size: 16px;
+      padding: 5px 8px;
+      font-size: 16px;
     }
-    
+  
     .modal-content {
-    width: 95%;
+      width: 95%;
     }
-    
+  
     select, input[type="text"] {
-    font-size: 16px;
+      font-size: 16px;
     }
-    }
-    
+  }
+  

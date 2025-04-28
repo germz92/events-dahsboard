@@ -1,6 +1,6 @@
 // 🔥 Global variables
 let users = [];
-const cameras = ["A7IV-A", "A7IV-B", "A7IV-C", "A7IV-D", "A7IV-E", "A7RV-A", "FX3-A"];
+const cameras = ["A7IV-A", "A7IV-B", "A7IV-C", "A7IV-D", "A7IV-E", "A7RV-A", "FX3-A", "A7IV", "A7RV", "A7III"];
 
 async function loadUsers() {
   const token = localStorage.getItem('token');
@@ -77,26 +77,15 @@ function addDaySection(date, entries = []) {
 
 function addRow(date, entry = {}) {
   const tbody = document.getElementById(`tbody-${date}`);
-  
   const row = document.createElement('tr');
-
-  const cameraOptions = [
-    `<option value="" disabled selected>Select Camera</option>`,
-    ...cameras.map(cam => 
-      `<option value="${cam}" ${cam === entry.camera ? 'selected' : ''}>${cam}</option>`
-    )
-  ].join('');
-
-  const userOptions = [
-    `<option value="" disabled selected>Select User</option>`,
-    ...users.map(user => 
-      `<option value="${user}" ${user === entry.user ? 'selected' : ''}>${user}</option>`
-    )
-  ].join('');
 
   row.innerHTML = `
     <td data-label="Camera">
-      <select>${cameraOptions}</select>
+      <select class="camera-select">
+        <option disabled selected>Select Camera</option>
+        ${cameras.map(cam => `<option value="${cam}">${cam}</option>`).join('')}
+        <option value="add-new-camera">➕ Add New Camera</option>
+      </select>
     </td>
     <td data-label="Card 1">
       <input type="text" value="${entry.card1 || ''}" placeholder="Card 1" />
@@ -105,24 +94,62 @@ function addRow(date, entry = {}) {
       <input type="text" value="${entry.card2 || ''}" placeholder="Card 2" />
     </td>
     <td data-label="User">
-      <select>${userOptions}</select>
+      <select class="user-select">
+        <option disabled selected>Select User</option>
+        ${users.map(user => `<option value="${user}">${user}</option>`).join('')}
+        <option value="add-new-user">➕ Add New User</option>
+      </select>
     </td>
-    <td data-label="Action">
+    <td data-label="Action" style="text-align:center;">
       <button class="delete-row-btn" title="Delete Row" style="
         background: transparent;
         border: none;
         font-size: 18px;
         cursor: pointer;
         color: #d11a2a;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
       ">🗑️</button>
     </td>
   `;
 
   tbody.appendChild(row);
+
+  // After appending, attach listeners to new selects:
+  const cameraSelect = row.querySelector('.camera-select');
+  const userSelect = row.querySelector('.user-select');
+
+  cameraSelect.addEventListener('change', function () {
+    if (this.value === 'add-new-camera') {
+      const newCamera = prompt('Enter new camera name:');
+      if (newCamera) {
+        cameras.push(newCamera);
+        const newOption = document.createElement('option');
+        newOption.value = newCamera;
+        newOption.textContent = newCamera;
+        this.insertBefore(newOption, this.querySelector('option[value="add-new-camera"]'));
+        this.value = newCamera; // auto select new camera
+      } else {
+        this.value = ''; // reset if cancelled
+      }
+    }
+  });
+
+  userSelect.addEventListener('change', function () {
+    if (this.value === 'add-new-user') {
+      const newUser = prompt('Enter new user name:');
+      if (newUser) {
+        users.push(newUser);
+        const newOption = document.createElement('option');
+        newOption.value = newUser;
+        newOption.textContent = newUser;
+        this.insertBefore(newOption, this.querySelector('option[value="add-new-user"]'));
+        this.value = newUser; // auto select new user
+      } else {
+        this.value = ''; // reset if cancelled
+      }
+    }
+  });
 }
+
 
 // 🔥 Main
 document.addEventListener('DOMContentLoaded', async () => {

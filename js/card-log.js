@@ -50,8 +50,8 @@ function addDaySection(date, entries = []) {
         <col style="width: 25%;">
         <col style="width: 15%;">
         <col style="width: 15%;">
-        <col style="width: 33%;">
-        <col style="width: 12%;">  <!-- 🗑️ Trash button -->
+        <col style="width: 35%;">
+        <col style="width: 10%;">  <!-- 🗑️ Trash button -->
       </colgroup>
       <thead>
         <tr>
@@ -59,7 +59,7 @@ function addDaySection(date, entries = []) {
           <th>Card 1</th>
           <th>Card 2</th>
           <th>User</th>
-          <th>Action</th>
+          <th></th>
         </tr>
       </thead>
       <tbody id="tbody-${date}"></tbody>
@@ -77,29 +77,51 @@ function addDaySection(date, entries = []) {
 
 function addRow(date, entry = {}) {
   const tbody = document.getElementById(`tbody-${date}`);
+  
   const row = document.createElement('tr');
+  row.style.position = 'relative';
 
-  const cameraOptions = cameras.map(cam => 
-    `<option value="${cam}" ${cam === entry.camera ? 'selected' : ''}>${cam}</option>`
-  ).join('');
+  const cameraOptions = [
+    `<option value="" disabled selected>Select Camera</option>`,
+    ...cameras.map(cam => 
+      `<option value="${cam}" ${cam === entry.camera ? 'selected' : ''}>${cam}</option>`
+    )
+  ].join('');
 
   const userOptions = [
-    `<option value="" disabled>Select User</option>`,
+    `<option value="" disabled selected>Select User</option>`,
     ...users.map(user => 
       `<option value="${user}" ${user === entry.user ? 'selected' : ''}>${user}</option>`
     )
   ].join('');
 
   row.innerHTML = `
-    <td><select><option disabled>Select Camera</option>${cameraOptions}</select></td>
-    <td><input type="text" value="${entry.card1 || ''}" placeholder="Card 1" /></td>
-    <td><input type="text" value="${entry.card2 || ''}" placeholder="Card 2" /></td>
-    <td><select>${userOptions}</select></td>
-    <td><button class="delete-row-btn" title="Delete Row" style="background: transparent; align-items: center; border: none; font-size: 18px; cursor: pointer;">🗑️</button></td>
+    <td data-label="Camera">
+      <select>${cameraOptions}</select>
+    </td>
+    <td data-label="Card 1">
+      <input type="text" value="${entry.card1 || ''}" placeholder="Card 1" />
+    </td>
+    <td data-label="Card 2">
+      <input type="text" value="${entry.card2 || ''}" placeholder="Card 2" />
+    </td>
+    <td data-label="User">
+      <select>${userOptions}</select>
+    </td>
+    <button class="delete-row-btn" title="Delete Row" style="
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: transparent;
+      border: none;
+      font-size: 18px;
+      cursor: pointer;
+      color: #d11a2a;">🗑️</button>
   `;
 
   tbody.appendChild(row);
 }
+
 
 // 🔥 Main
 document.addEventListener('DOMContentLoaded', async () => {

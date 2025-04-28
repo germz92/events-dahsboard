@@ -101,8 +101,7 @@ button:hover {
 .delete-row-btn,
 .delete-day-btn {
   background: transparent;
-  border: none;
-  font-size: 20px;
+  font-size: 16px;
   color: #dc3545;
   cursor: pointer;
   transition: color 0.2s ease;
@@ -166,12 +165,12 @@ padding: 5px 8px;
 
 table {
 max-width: 100%;
-font-size: 14px;
+font-size: 16px;
 }
 
 th, td {
 padding: 8px;
-font-size: 12px;
+font-size: 16px;
 }
 
 h2 {
@@ -180,12 +179,12 @@ font-size: 16px;
 
 .back-btn {
 padding: 8px 12px;
-font-size: 14px;
+font-size: 16px;
 }
 
 button {
 padding: 5px 8px;
-font-size: 12px;
+font-size: 16px;
 }
 
 .modal-content {
@@ -193,7 +192,7 @@ width: 95%;
 }
 
 select, input[type="text"] {
-font-size: 14px;
+font-size: 16px;
 width: 100%;
 }
 }

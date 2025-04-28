@@ -260,7 +260,7 @@ table select {
   
   th, td {
   padding: 8px;
-  font-size: 12px;
+  font-size: 16px;
   }
   
   h2 {
@@ -269,12 +269,12 @@ table select {
   
   .back-btn {
   padding: 8px 12px;
-  font-size: 14px;
+  font-size: 16px;
   }
   
   button {
   padding: 5px 8px;
-  font-size: 12px;
+  font-size: 16px;
   }
   
   .modal-content {
@@ -282,7 +282,7 @@ table select {
   }
   
   select, input[type="text"] {
-  font-size: 14px;
+  font-size: 16px;
   }
   }
   

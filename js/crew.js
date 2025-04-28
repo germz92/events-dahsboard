@@ -75,10 +75,10 @@ function renderTableSection() {
     table.style.width = '100%';
     table.innerHTML = `
       <colgroup>
-        <col style="width: 26%;"> <!-- Name -->
+        <col style="width: 24%;"> <!-- Name -->
         <col style="width: 10%;"> <!-- Start -->
         <col style="width: 10%;"> <!-- End -->
-        <col style="width: 8%;">  <!-- Total Hours -->
+        <col style="width: 10%;">  <!-- Total Hours -->
         <col style="width: 20%;"> <!-- Role -->
         <col style="width: 20%;"> <!-- Notes -->
         <col style="width: 6%;">  <!-- Action -->

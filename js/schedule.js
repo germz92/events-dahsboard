@@ -267,25 +267,18 @@ function handleSearchInput(e) {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-    const searchBox = document.createElement('input');
-    searchBox.type = 'text';
-    searchBox.placeholder = 'Search...';
-    searchBox.style.margin = '10px auto';
-    searchBox.style.display = 'block';
-    searchBox.style.padding = '8px';
-    searchBox.style.width = '95%';
-    searchBox.style.maxWidth = '500px';
-    searchBox.style.fontSize = '16px';
-    searchBox.addEventListener('input', handleSearchInput);
-  
-    const backButton = document.querySelector('.back-btn') || document.querySelector('button');
-    if (backButton) {
-      backButton.insertAdjacentElement('afterend', searchBox); // ✅ Insert after Back button
-    } else {
-      document.body.prepend(searchBox); // Fallback if no back button
-    }
-  
-    loadPrograms();
-  });
-  
-  
+  const searchBox = document.createElement('input');
+  searchBox.type = 'text';
+  searchBox.placeholder = 'Search...';
+  searchBox.style.margin = '10px auto';
+  searchBox.style.display = 'block';
+  searchBox.style.padding = '8px';
+  searchBox.style.width = '95%';
+  searchBox.style.maxWidth = '500px';
+  searchBox.style.fontSize = '16px';
+  searchBox.addEventListener('input', handleSearchInput);
+
+  document.body.insertBefore(searchBox, document.getElementById('programSections'));
+
+  loadPrograms();
+});

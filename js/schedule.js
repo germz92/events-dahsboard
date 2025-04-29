@@ -138,8 +138,11 @@ function renderProgramSections() {
           </div>
           <div style="display: flex; align-items: center; flex: 1;">
             <span style="margin-right: 4px;">👤</span>
-            <input style="flex: 1; min-width: 0;" type="text" placeholder="Photographer" value="${program.photographer || ''}" 
-              onfocus="enableEdit(this)" onblur="autoSave(this, '${program.date}', ${program.__index}, 'photographer')">
+            <textarea style="flex: 1; min-width: 0; resize: none; overflow-wrap: break-word;"
+              placeholder="Photographer"
+              onfocus="enableEdit(this)"
+              oninput="autoResizeTextarea(this)"
+              onblur="autoSave(this, '${program.date}', ${program.__index}, 'photographer')">${program.photographer || ''}</textarea>
           </div>
         </div>
 
@@ -232,8 +235,8 @@ function captureCurrentPrograms() {
         startTime: entry.querySelector('input[placeholder="Start Time"]')?.value.trim() || '',
         endTime: entry.querySelector('input[placeholder="End Time"]')?.value.trim() || '',
         location: entry.querySelector('input[placeholder="Location"]')?.value.trim() || '',
-        photographer: entry.querySelector('input[placeholder="Photographer"]')?.value.trim() || '',
-        notes: entry.querySelector('textarea')?.value.trim() || '',
+        photographer: entry.querySelector('textarea[placeholder="Photographer"]')?.value.trim() || '',
+        notes: entry.querySelector('textarea[placeholder="Notes"]')?.value.trim() || '',
       });
     });
   });

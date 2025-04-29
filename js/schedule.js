@@ -3,6 +3,7 @@ const params = new URLSearchParams(window.location.search);
 const tableId = params.get('id');
 let saveTimeout;
 let searchQuery = '';
+let filterDate = 'all'; // NEW: filter by selected date
 
 function formatDate(dateStr) {
   const [year, month, day] = dateStr.split('-');
@@ -63,6 +64,24 @@ function renderProgramSections() {
   if (!container) return console.error('Missing #programSections div!');
   container.innerHTML = '';
 
+  const filterDropdown = document.getElementById('filterDateDropdown');
+  if (filterDropdown) {
+    const allDates = [...new Set(tableData.programs.map(p => p.date))].sort((a, b) => a.localeCompare(b));
+    const currentSelection = filterDropdown.value;
+    filterDropdown.innerHTML = `<option value="all">All Dates</option>`;
+    allDates.forEach(date => {
+      const option = document.createElement('option');
+      option.value = date;
+      option.textContent = formatDate(date);
+      filterDropdown.appendChild(option);
+    });
+    if (allDates.includes(currentSelection)) {
+      filterDropdown.value = currentSelection;
+    } else {
+      filterDropdown.value = 'all';
+    }
+  }
+
   if (tableData.programs.length === 0) {
     const empty = document.createElement('div');
     empty.textContent = 'No programs yet. Add a new date to get started.';
@@ -82,13 +101,7 @@ function renderProgramSections() {
       .sort((a, b) => {
         const aStart = a.startTime || '';
         const bStart = b.startTime || '';
-        const startDiff = aStart.localeCompare(bStart);
-        if (startDiff !== 0) return startDiff;
-        const aEnd = a.endTime || '';
-        const bEnd = b.endTime || '';
-        const endDiff = aEnd.localeCompare(bEnd);
-        if (endDiff !== 0) return endDiff;
-        return (a.name || '').localeCompare(b.name || '');
+        return aStart.localeCompare(bStart);
       });
 
     if (matchingPrograms.length === 0) return;
@@ -128,7 +141,7 @@ function renderProgramSections() {
         <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px;">
           <div style="display: flex; align-items: center; flex: 1;">
             <span style="margin-right: 4px;">📍</span>
-            <textarea style="flex: 1; min-width: 0; resize: none; overflow-wrap: break-word;"
+            <textarea style="flex: 1; resize: none;"
               placeholder="Location"
               onfocus="enableEdit(this)"
               oninput="autoResizeTextarea(this)"
@@ -136,7 +149,7 @@ function renderProgramSections() {
           </div>
           <div style="display: flex; align-items: center; flex: 1;">
             <span style="margin-right: 4px;">👤</span>
-            <textarea style="flex: 1; min-width: 0; resize: none; overflow-wrap: break-word;"
+            <textarea style="flex: 1; resize: none;"
               placeholder="Photographer"
               onfocus="enableEdit(this)"
               oninput="autoResizeTextarea(this)"
@@ -172,6 +185,9 @@ function renderProgramSections() {
 }
 
 function matchesSearch(program) {
+  if (filterDate !== 'all' && program.date !== filterDate) {
+    return false;
+  }
   if (!searchQuery.trim()) return true;
   const lower = searchQuery.toLowerCase();
   return (
@@ -304,18 +320,42 @@ function handleSearchInput(e) {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
+  const controlsWrapper = document.createElement('div');
+  controlsWrapper.style.display = 'flex';
+  controlsWrapper.style.flexDirection = 'row';
+  controlsWrapper.style.justifyContent = 'center';
+  controlsWrapper.style.alignItems = 'center';
+  controlsWrapper.style.gap = '8px';
+  controlsWrapper.style.margin = '10px auto';
+  controlsWrapper.style.flexWrap = 'nowrap';
+  controlsWrapper.style.overflowX = 'auto';
+  controlsWrapper.style.padding = '0 10px';
+
   const searchBox = document.createElement('input');
   searchBox.type = 'text';
   searchBox.placeholder = 'Search...';
-  searchBox.style.margin = '10px auto';
-  searchBox.style.display = 'block';
   searchBox.style.padding = '8px';
-  searchBox.style.width = '95%';
-  searchBox.style.maxWidth = '500px';
+  searchBox.style.minWidth = '180px';
   searchBox.style.fontSize = '16px';
   searchBox.addEventListener('input', handleSearchInput);
 
-  document.body.insertBefore(searchBox, document.getElementById('programSections'));
+  const filterSelect = document.createElement('select');
+  filterSelect.id = 'filterDateDropdown';
+  filterSelect.style.padding = '8px';
+  filterSelect.style.minWidth = '180px';
+  filterSelect.style.fontSize = '16px';
+  filterSelect.innerHTML = `<option value="all">All Dates</option>`;
+
+  filterSelect.addEventListener('change', e => {
+    filterDate = e.target.value;
+    renderProgramSections();
+  });
+
+  controlsWrapper.appendChild(searchBox);
+  controlsWrapper.appendChild(filterSelect);
+
+  document.body.insertBefore(controlsWrapper, document.getElementById('programSections'));
 
   loadPrograms();
 });
+

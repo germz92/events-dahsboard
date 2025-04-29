@@ -2,6 +2,7 @@ let tableData = { programs: [] };
 const params = new URLSearchParams(window.location.search);
 const tableId = params.get('id');
 let saveTimeout;
+let searchQuery = '';
 
 function formatDate(dateStr) {
   const [year, month, day] = dateStr.split('-');
@@ -42,7 +43,7 @@ async function savePrograms() {
 
 function scheduleSave() {
   clearTimeout(saveTimeout);
-  saveTimeout = setTimeout(savePrograms, 2000);
+  saveTimeout = setTimeout(savePrograms, 1000);
 }
 
 function renderProgramSections() {
@@ -66,6 +67,14 @@ function renderProgramSections() {
   const dates = [...new Set(tableData.programs.map(p => p.date))].sort((a, b) => a.localeCompare(b));
 
   dates.forEach(date => {
+    const matchingPrograms = tableData.programs
+      .map((p, i) => ({ ...p, __index: i }))
+      .filter(p => p.date === date && matchesSearch(p)); // ✅ filter FIRST
+
+    if (matchingPrograms.length === 0) {
+      return; // ✅ If no matching programs, don't render this date at all
+    }
+
     const section = document.createElement('div');
     section.className = 'date-section';
     section.setAttribute('data-date', date);
@@ -78,36 +87,37 @@ function renderProgramSections() {
     `;
     section.appendChild(headerWrapper);
 
-    tableData.programs.filter(p => p.date === date).forEach((program, index) => {
+    matchingPrograms.forEach(program => {
       const entry = document.createElement('div');
       entry.className = 'program-entry';
+      entry.setAttribute('data-program-index', program.__index);
       entry.innerHTML = `
         <input class="program-name" type="text" placeholder="Program Name" value="${program.name || ''}" 
-          onfocus="enableEdit(this)" onblur="autoSave(this, '${date}', ${index}, 'name')">
+          onfocus="enableEdit(this)" onblur="autoSave(this, '${program.date}', ${program.__index}, 'name')">
         <div style="display:flex;align-items:center;gap:6px;">
-            <input type="text" placeholder="Start Time" value="${program.startTime || ''}" 
-            onfocus="this.type='time'; enableEdit(this);" onblur="autoSave(this, '${date}', ${index}, 'startTime')">
-            <input type="text" placeholder="End Time" value="${program.endTime || ''}" 
-            onfocus="this.type='time'; enableEdit(this);" onblur="autoSave(this, '${date}', ${index}, 'endTime')">
+          <input type="text" placeholder="Start Time" value="${program.startTime || ''}" 
+            onfocus="this.type='time'; enableEdit(this);" onblur="autoSave(this, '${program.date}', ${program.__index}, 'startTime')">
+          <input type="text" placeholder="End Time" value="${program.endTime || ''}" 
+            onfocus="this.type='time'; enableEdit(this);" onblur="autoSave(this, '${program.date}', ${program.__index}, 'endTime')">
         </div>
         <div style="display:flex;align-items:center;margin-top:4px;">
           <span style="margin-right:6px;">📍</span>
           <input style="flex:1;" type="text" placeholder="Location" value="${program.location || ''}" 
-            onfocus="enableEdit(this)" onblur="autoSave(this, '${date}', ${index}, 'location')">
+            onfocus="enableEdit(this)" onblur="autoSave(this, '${program.date}', ${program.__index}, 'location')">
         </div>
         <div style="display:flex;align-items:center;margin-top:4px;">
           <span style="margin-right:6px;">👤</span>
           <input style="flex:1;" type="text" placeholder="Photographer" value="${program.photographer || ''}" 
-            onfocus="enableEdit(this)" onblur="autoSave(this, '${date}', ${index}, 'photographer')">
+            onfocus="enableEdit(this)" onblur="autoSave(this, '${program.date}', ${program.__index}, 'photographer')">
         </div>
         <button class="show-notes-btn" onclick="toggleNotes(this)">Show Notes</button>
         <div class="notes-field" style="display:none;">
           <textarea placeholder="Notes" 
             onfocus="enableEdit(this)" 
             oninput="autoResizeTextarea(this)" 
-            onblur="autoSave(this, '${date}', ${index}, 'notes')">${program.notes || ''}</textarea>
+            onblur="autoSave(this, '${program.date}', ${program.__index}, 'notes')">${program.notes || ''}</textarea>
         </div>
-        <button class="delete-btn" onclick="deleteProgram('${date}', ${index})">🗑️</button>
+        <button class="delete-btn" onclick="deleteProgram(this)">🗑️</button>
       `;
       section.appendChild(entry);
     });
@@ -126,16 +136,29 @@ function renderProgramSections() {
   }, 50);
 }
 
+function matchesSearch(program) {
+  if (!searchQuery.trim()) return true;
+  const lower = searchQuery.toLowerCase();
+  return (
+    (program.name || '').toLowerCase().includes(lower) ||
+    (program.startTime || '').toLowerCase().includes(lower) ||
+    (program.endTime || '').toLowerCase().includes(lower) ||
+    (program.location || '').toLowerCase().includes(lower) ||
+    (program.photographer || '').toLowerCase().includes(lower) ||
+    (program.notes || '').toLowerCase().includes(lower)
+  );
+}
+
 function enableEdit(field) {
   field.classList.add('editing');
 }
 
-function autoSave(field, date, index, key) {
+function autoSave(field, date, ignoredIndex, key) {
   field.classList.remove('editing');
-  const programIndex = tableData.programs.findIndex(
-    (p, i) => p.date === date && i === index
-  );
-  if (programIndex !== -1) {
+  const entry = field.closest('.program-entry');
+  const programIndex = parseInt(entry.getAttribute('data-program-index'), 10);
+
+  if (!isNaN(programIndex)) {
     tableData.programs[programIndex][key] = field.value.trim();
     scheduleSave();
   }
@@ -147,7 +170,7 @@ function toggleNotes(button) {
     notesField.style.display = 'block';
     button.textContent = 'Hide Notes';
     const textarea = notesField.querySelector('textarea');
-    if (textarea) autoResizeTextarea(textarea); // Resize immediately when showing
+    if (textarea) autoResizeTextarea(textarea);
   } else {
     notesField.style.display = 'none';
     button.textContent = 'Show Notes';
@@ -215,10 +238,15 @@ function addProgram(date) {
   scheduleSave();
 }
 
-function deleteProgram(date, index) {
-  tableData.programs = tableData.programs.filter((p, i) => !(p.date === date && i === index));
-  renderProgramSections();
-  scheduleSave();
+function deleteProgram(button) {
+  const entry = button.closest('.program-entry');
+  const programIndex = parseInt(entry.getAttribute('data-program-index'), 10);
+
+  if (!isNaN(programIndex)) {
+    tableData.programs.splice(programIndex, 1);
+    renderProgramSections();
+    scheduleSave();
+  }
 }
 
 function deleteDate(date) {
@@ -230,10 +258,27 @@ function deleteDate(date) {
 }
 
 function goBack() {
-    window.location.href = `event.html?id=${tableId}`;
-  }
-  
+  window.location.href = `event.html?id=${tableId}`;
+}
+
+function handleSearchInput(e) {
+  searchQuery = e.target.value.trim();
+  renderProgramSections();
+}
 
 window.addEventListener('DOMContentLoaded', () => {
+  const searchBox = document.createElement('input');
+  searchBox.type = 'text';
+  searchBox.placeholder = 'Search...';
+  searchBox.style.margin = '10px auto';
+  searchBox.style.display = 'block';
+  searchBox.style.padding = '8px';
+  searchBox.style.width = '95%';
+  searchBox.style.maxWidth = '500px';
+  searchBox.style.fontSize = '16px';
+  searchBox.addEventListener('input', handleSearchInput);
+
+  document.body.insertBefore(searchBox, document.getElementById('programSections'));
+
   loadPrograms();
 });

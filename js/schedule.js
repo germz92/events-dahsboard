@@ -127,15 +127,15 @@ function renderProgramSections() {
           onfocus="enableEdit(this)" onblur="autoSave(this, '${program.date}', ${program.__index}, 'name')">
 
         <div style="display: flex; align-items: center; gap: 3px;">
-          <input type="text" placeholder="Start Time" style="flex: 1; min-width: 0;" 
-            value="${formatTo12Hour(program.startTime)}"
-            onfocus="this.type='time'; enableEdit(this); this.value='${program.startTime || ''}'"
-            onblur="autoSave(this, '${program.date}', ${program.__index}, 'startTime'); this.type='text'; this.value=formatTo12Hour(this.value);">
+          <input type="time" placeholder="Start Time" style="flex: 1; min-width: 0;"
+            value="${program.startTime || ''}"
+            onfocus="enableEdit(this)"
+            onblur="autoSave(this, '${program.date}', ${program.__index}, 'startTime')">
 
-          <input type="text" placeholder="End Time" style="flex: 1; min-width: 0;" 
-            value="${formatTo12Hour(program.endTime)}"
-            onfocus="this.type='time'; enableEdit(this); this.value='${program.endTime || ''}'"
-            onblur="autoSave(this, '${program.date}', ${program.__index}, 'endTime'); this.type='text'; this.value=formatTo12Hour(this.value);">
+          <input type="time" placeholder="End Time" style="flex: 1; min-width: 0;"
+            value="${program.endTime || ''}"
+            onfocus="enableEdit(this)"
+            onblur="autoSave(this, '${program.date}', ${program.__index}, 'endTime')">
         </div>
 
         <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px;">

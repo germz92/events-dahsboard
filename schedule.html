@@ -46,7 +46,7 @@
   <h1>Program Schedule</h1>
 
   <div class="top-controls">
-    <input id="newDate" type="text" placeholder="Select Date">
+    <input id="newDate" type="date" placeholder="Select Date">
     <button class="add-btn" onclick="addDateSection()">+ Add Date</button>
   </div>
 
@@ -55,27 +55,5 @@
   <script src="js/config.js"></script>
   <script src="js/schedule.js"></script>
 
-  <script>
-    // 🛠 Fix for the Select Date input to work perfectly on mobile
-    const dateInput = document.getElementById('newDate');
-
-    function enableDatePicker(e) {
-      if (dateInput.type === 'text') {
-        e.preventDefault(); // Stop normal behavior
-        dateInput.type = 'date';
-        setTimeout(() => dateInput.focus(), 10); // slight delay to trigger mobile date picker
-      }
-    }
-
-    function resetIfEmpty() {
-      if (!dateInput.value) {
-        dateInput.type = 'text';
-      }
-    }
-
-    dateInput.addEventListener('mousedown', enableDatePicker);
-    dateInput.addEventListener('touchstart', enableDatePicker);
-    dateInput.addEventListener('blur', resetIfEmpty);
-  </script>
 </body>
 </html>

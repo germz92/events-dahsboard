@@ -6,54 +6,24 @@
   <title>Program Schedule</title>
   <link rel="stylesheet" href="css/schedule.css">
   <link rel="shortcut icon" type="image/x-icon" href="assets/favicon.png">
-  <style>
-    .top-controls {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      justify-content: center;
-      margin-bottom: 20px;
-    }
-
-    .top-controls input {
-      padding: 8px;
-      font-size: 16px;
-      flex: 1;
-      max-width: 140px;
-      text-align: center;
-    }
-
-    .top-controls button {
-      padding: 8px 16px;
-      font-size: 16px;
-      cursor: pointer;
-      max-width: 120px;
-      background-color: #007BFF;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-weight: 600;
-    }
-
-    .top-controls button:hover {
-      background-color: #0056b3;
-    }
-  </style>
 </head>
 <body>
   <button onclick="goBack()" style="background: #ccc; padding: 8px 12px; border-radius: 6px; border: none; cursor: pointer;">⬅ Back</button>
-  <h2 id="eventTitle"></h2>
-  <h1>Program Schedule</h1>
 
+  <!-- Dynamic Event Title -->
+  <h2 id="eventTitle" style="text-align: center; margin-top: 20px;"></h2>
+
+  <!-- Top Controls: Add Date + Show All Notes -->
   <div class="top-controls">
     <input id="newDate" type="date" placeholder="Select Date">
     <button class="add-btn" onclick="addDateSection()">+ Add Date</button>
   </div>
 
+  <!-- Schedule Content -->
   <div id="programSections" class="program-container"></div>
 
+  <!-- Scripts -->
   <script src="js/config.js"></script>
   <script src="js/schedule.js"></script>
-
 </body>
 </html>

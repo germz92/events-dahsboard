@@ -3,7 +3,8 @@ const params = new URLSearchParams(window.location.search);
 const tableId = params.get('id');
 let saveTimeout;
 let searchQuery = '';
-let filterDate = 'all'; // NEW: filter by selected date
+let filterDate = 'all';
+let allNotesVisible = false;
 
 function formatDate(dateStr) {
   const [year, month, day] = dateStr.split('-');
@@ -75,11 +76,7 @@ function renderProgramSections() {
       option.textContent = formatDate(date);
       filterDropdown.appendChild(option);
     });
-    if (allDates.includes(currentSelection)) {
-      filterDropdown.value = currentSelection;
-    } else {
-      filterDropdown.value = 'all';
-    }
+    filterDropdown.value = currentSelection || 'all';
   }
 
   if (tableData.programs.length === 0) {
@@ -228,6 +225,25 @@ function toggleNotes(button) {
   }
 }
 
+function toggleAllNotes() {
+  const allNotes = document.querySelectorAll('.notes-field');
+  const allButtons = document.querySelectorAll('.show-notes-btn');
+
+  allNotes.forEach(note => {
+    note.style.display = allNotesVisible ? 'none' : 'block';
+    const textarea = note.querySelector('textarea');
+    if (!allNotesVisible && textarea) autoResizeTextarea(textarea);
+  });
+
+  allButtons.forEach(button => {
+    button.textContent = allNotesVisible ? 'Show Notes' : 'Hide Notes';
+  });
+
+  allNotesVisible = !allNotesVisible;
+  const toggleBtn = document.getElementById('toggleAllNotesBtn');
+  if (toggleBtn) toggleBtn.textContent = allNotesVisible ? 'Hide All Notes' : 'Show All Notes';
+}
+
 function autoResizeTextarea(textarea) {
   if (!textarea) return;
   textarea.style.height = 'auto';
@@ -319,17 +335,56 @@ function handleSearchInput(e) {
   renderProgramSections();
 }
 
+async function loadEventTitle() {
+  try {
+    const res = await fetch(`${API_BASE}/api/tables/${tableId}`, {
+      headers: { Authorization: localStorage.getItem('token') }
+    });
+    const data = await res.json();
+    const titleEl = document.getElementById('eventTitle');
+    if (titleEl && data.title) {
+      titleEl.textContent = `${data.title} Schedule`;
+    }
+  } catch (err) {
+    console.error('Failed to load event title:', err);
+  }
+}
+
+
 window.addEventListener('DOMContentLoaded', () => {
+  const newDateInput = document.getElementById('newDate');
+  const addDateBtn = document.querySelector('button[onclick="addDateSection()"]');
+
+  if (newDateInput && addDateBtn) {
+    const toggleNotesBtn = document.createElement('button');
+    toggleNotesBtn.id = 'toggleAllNotesBtn';
+    toggleNotesBtn.textContent = 'Show All Notes';
+
+    // Styling so it looks like a subtle inline link, not a real button
+    toggleNotesBtn.style.fontSize = '16px';
+    toggleNotesBtn.style.background = 'none';
+    toggleNotesBtn.style.border = 'none';
+    toggleNotesBtn.style.color = '#007bff';
+    toggleNotesBtn.style.cursor = 'pointer';
+    toggleNotesBtn.style.padding = '0';
+    toggleNotesBtn.style.marginLeft = '8px';
+    toggleNotesBtn.style.textDecoration = 'underline';
+    toggleNotesBtn.style.alignSelf = 'center';
+    toggleNotesBtn.onclick = toggleAllNotes;
+
+    // Insert the toggle button on the same line as the Add Date button
+    addDateBtn.insertAdjacentElement('afterend', toggleNotesBtn);
+  }
+
   const controlsWrapper = document.createElement('div');
   controlsWrapper.style.display = 'flex';
   controlsWrapper.style.flexDirection = 'row';
   controlsWrapper.style.justifyContent = 'center';
   controlsWrapper.style.alignItems = 'center';
-  controlsWrapper.style.gap = '8px';
-  controlsWrapper.style.margin = '10px auto';
   controlsWrapper.style.flexWrap = 'nowrap';
   controlsWrapper.style.overflowX = 'auto';
-  controlsWrapper.style.padding = '0 10px';
+  controlsWrapper.style.gap = '8px';
+  controlsWrapper.style.padding = '10px';
 
   const searchBox = document.createElement('input');
   searchBox.type = 'text';
@@ -345,7 +400,6 @@ window.addEventListener('DOMContentLoaded', () => {
   filterSelect.style.minWidth = '180px';
   filterSelect.style.fontSize = '16px';
   filterSelect.innerHTML = `<option value="all">All Dates</option>`;
-
   filterSelect.addEventListener('change', e => {
     filterDate = e.target.value;
     renderProgramSections();
@@ -357,5 +411,6 @@ window.addEventListener('DOMContentLoaded', () => {
   document.body.insertBefore(controlsWrapper, document.getElementById('programSections'));
 
   loadPrograms();
-});
+  loadEventTitle();
 
+});

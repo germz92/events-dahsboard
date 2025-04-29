@@ -12,12 +12,15 @@ body {
   }
   
   .top-controls {
+    width: 90%;
+    max-width: 800px;
     display: flex;
     justify-content: center;
-    gap: 8px;
-    margin: 12px 0;
-    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+    margin: 6px auto;
   }
+  
   
   .top-controls input {
     padding: 6px;
@@ -180,7 +183,8 @@ body {
   
     .top-controls {
       gap: 6px;
-      margin: 8px 0;
+      margin: 8px auto;
+      width: 90%;
     }
   
     .top-controls input {

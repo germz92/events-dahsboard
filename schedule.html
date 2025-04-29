@@ -14,11 +14,17 @@
   <div style="display: flex; justify-content: center; margin: 10px 0;">
   </div>
   
-
-  <div class="top-controls">
-    <input type="date" id="newDate">
-    <button class="add-btn" onclick="addDateSection()">+ Add Date</button>
+  <div class="top-controls" style="display: flex; align-items: center; gap: 10px; justify-content: center; margin-bottom: 20px;">
+    <input id="newDate" type="text" placeholder="Select Date" 
+      onfocus="this.type='date'; this.focus();" 
+      onblur="if(!this.value) this.type='text';"
+      style="padding:8px; font-size:16px; flex:1; max-width:100px;">
+    
+    <button class="add-btn" onclick="addDateSection()" 
+      style="padding:8px 16px; font-size:16px; cursor:pointer; max-width:120px;">+ Add Date</button>
   </div>
+  
+  
 
   <div id="programSections" class="program-container"></div>
 

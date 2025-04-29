@@ -60,10 +60,7 @@ function scheduleSave() {
 
 function renderProgramSections() {
   const container = document.getElementById('programSections');
-  if (!container) {
-    console.error('Missing #programSections div!');
-    return;
-  }
+  if (!container) return console.error('Missing #programSections div!');
   container.innerHTML = '';
 
   if (tableData.programs.length === 0) {
@@ -87,12 +84,10 @@ function renderProgramSections() {
         const bStart = b.startTime || '';
         const startDiff = aStart.localeCompare(bStart);
         if (startDiff !== 0) return startDiff;
-
         const aEnd = a.endTime || '';
         const bEnd = b.endTime || '';
         const endDiff = aEnd.localeCompare(bEnd);
         if (endDiff !== 0) return endDiff;
-
         return (a.name || '').localeCompare(b.name || '');
       });
 
@@ -133,8 +128,11 @@ function renderProgramSections() {
         <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px;">
           <div style="display: flex; align-items: center; flex: 1;">
             <span style="margin-right: 4px;">📍</span>
-            <input style="flex: 1; min-width: 0;" type="text" placeholder="Location" value="${program.location || ''}" 
-              onfocus="enableEdit(this)" onblur="autoSave(this, '${program.date}', ${program.__index}, 'location')">
+            <textarea style="flex: 1; min-width: 0; resize: none; overflow-wrap: break-word;"
+              placeholder="Location"
+              onfocus="enableEdit(this)"
+              oninput="autoResizeTextarea(this)"
+              onblur="autoSave(this, '${program.date}', ${program.__index}, 'location')">${program.location || ''}</textarea>
           </div>
           <div style="display: flex; align-items: center; flex: 1;">
             <span style="margin-right: 4px;">👤</span>
@@ -234,7 +232,7 @@ function captureCurrentPrograms() {
         name: entry.querySelector('input.program-name')?.value.trim() || '',
         startTime: entry.querySelector('input[placeholder="Start Time"]')?.value.trim() || '',
         endTime: entry.querySelector('input[placeholder="End Time"]')?.value.trim() || '',
-        location: entry.querySelector('input[placeholder="Location"]')?.value.trim() || '',
+        location: entry.querySelector('textarea[placeholder="Location"]')?.value.trim() || '',
         photographer: entry.querySelector('textarea[placeholder="Photographer"]')?.value.trim() || '',
         notes: entry.querySelector('textarea[placeholder="Notes"]')?.value.trim() || '',
       });

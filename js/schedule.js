@@ -14,6 +14,14 @@ function formatDate(dateStr) {
   });
 }
 
+function formatTo12Hour(time) {
+  if (!time) return '';
+  const [hour, minute] = time.split(':').map(Number);
+  const h = hour % 12 || 12;
+  const ampm = hour >= 12 ? 'PM' : 'AM';
+  return `${h.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')} ${ampm}`;
+}
+
 async function loadPrograms() {
   try {
     const res = await fetch(`${API_BASE}/api/tables/${tableId}/program-schedule`, {
@@ -75,9 +83,16 @@ function renderProgramSections() {
       .map((p, i) => ({ ...p, __index: i }))
       .filter(p => p.date === date && matchesSearch(p))
       .sort((a, b) => {
-        if (a.startTime && b.startTime) {
-          return a.startTime.localeCompare(b.startTime);
-        }
+        const aStart = a.startTime || '';
+        const bStart = b.startTime || '';
+        const startDiff = aStart.localeCompare(bStart);
+        if (startDiff !== 0) return startDiff;
+
+        const aEnd = a.endTime || '';
+        const bEnd = b.endTime || '';
+        const endDiff = aEnd.localeCompare(bEnd);
+        if (endDiff !== 0) return endDiff;
+
         return (a.name || '').localeCompare(b.name || '');
       });
 
@@ -104,13 +119,15 @@ function renderProgramSections() {
           onfocus="enableEdit(this)" onblur="autoSave(this, '${program.date}', ${program.__index}, 'name')">
 
         <div style="display: flex; align-items: center; gap: 3px;">
-          <input type="text" placeholder="Start Time" style="flex: 1; min-width: 0;" value="${program.startTime || ''}" 
-            onfocus="this.type='time'; enableEdit(this);" 
-            onblur="autoSave(this, '${program.date}', ${program.__index}, 'startTime')">
-          
-          <input type="text" placeholder="End Time" style="flex: 1; min-width: 0;" value="${program.endTime || ''}" 
-            onfocus="this.type='time'; enableEdit(this);" 
-            onblur="autoSave(this, '${program.date}', ${program.__index}, 'endTime')">
+          <input type="text" placeholder="Start Time" style="flex: 1; min-width: 0;" 
+            value="${formatTo12Hour(program.startTime)}"
+            onfocus="this.type='time'; enableEdit(this); this.value='${program.startTime || ''}'"
+            onblur="autoSave(this, '${program.date}', ${program.__index}, 'startTime'); this.type='text'; this.value=formatTo12Hour(this.value);">
+
+          <input type="text" placeholder="End Time" style="flex: 1; min-width: 0;" 
+            value="${formatTo12Hour(program.endTime)}"
+            onfocus="this.type='time'; enableEdit(this); this.value='${program.endTime || ''}'"
+            onblur="autoSave(this, '${program.date}', ${program.__index}, 'endTime'); this.type='text'; this.value=formatTo12Hour(this.value);">
         </div>
 
         <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px;">
@@ -204,11 +221,11 @@ function captureCurrentPrograms() {
   const sections = document.querySelectorAll('.date-section');
   let newPrograms = [];
 
-  sections.forEach((section) => {
+  sections.forEach(section => {
     const date = section.getAttribute('data-date');
     const entries = section.querySelectorAll('.program-entry');
 
-    entries.forEach((entry) => {
+    entries.forEach(entry => {
       newPrograms.push({
         date,
         name: entry.querySelector('input.program-name')?.value.trim() || '',
@@ -270,7 +287,7 @@ function deleteProgram(button) {
 
 function deleteDate(date) {
   if (confirm('Delete all programs for this date?')) {
-    tableData.programs = tableData.programs.filter((p) => p.date !== date);
+    tableData.programs = tableData.programs.filter(p => p.date !== date);
     renderProgramSections();
     scheduleSave();
   }

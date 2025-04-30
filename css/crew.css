@@ -5,7 +5,7 @@ body {
     background: #f5f7fa;
     color: #333;
     overflow-x: hidden;
-    margin-top: 240px; /* Makes room for fixed header */
+    margin-top: 260px; /* Makes room for fixed header */
   }
   
   html {

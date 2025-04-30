@@ -20,22 +20,34 @@
     async function submitCreate() {
       const title = document.getElementById('newTitle').value;
       const client = document.getElementById('newClient').value;
-      const start = document.getElementById('newStart').value;
-      const end = document.getElementById('newEnd').value;
-
+      const startDate = document.getElementById('newStart').value;
+      const endDate = document.getElementById('newEnd').value;
+    
+      if (!title || !startDate || !endDate) {
+        alert("Please fill out all fields.");
+        return;
+      }
+    
+      const start = `${startDate}T12:00:00`; // 👈 Add time to prevent timezone rollback
+      const end = `${endDate}T12:00:00`;
+    
       const res = await fetch(`${API_BASE}/api/tables`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: token
         },
-        body: JSON.stringify({ title, general: { client, start, end } })
+        body: JSON.stringify({
+          title,
+          general: { client, start, end }
+        })
       });
-
+    
       await res.json();
       hideCreateModal();
       loadTables();
     }
+    
 
     async function loadTables() {
       const res = await fetch(`${API_BASE}/api/tables`, {

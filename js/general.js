@@ -21,6 +21,14 @@ function addContactRow(contact = {}) {
 }
 
 
+function formatDateInput(isoStr) {
+  if (!isoStr) return '';
+  const date = new Date(isoStr);
+  const offset = date.getTimezoneOffset();
+  date.setMinutes(date.getMinutes() - offset); // neutralize timezone offset
+  return date.toISOString().split('T')[0]; // return YYYY-MM-DD
+}
+
 async function loadGeneralInfo() {
   const res = await fetch(`${API_BASE}/api/tables/${tableId}/general`, {
     headers: { Authorization: token }
@@ -30,13 +38,14 @@ async function loadGeneralInfo() {
   const form = document.getElementById('generalForm');
   form.location.value = data.location || '';
   form.weather.value = data.weather || '';
-  form.start.value = data.start || '';
-  form.end.value = data.end || '';
+  form.start.value = formatDateInput(data.start);
+  form.end.value = formatDateInput(data.end);
   form.attendees.value = data.attendees || '';
   form.budget.value = data.budget || '';
 
   (data.contacts || []).forEach(contact => addContactRow(contact));
 }
+
 
 async function saveGeneralInfo() {
   const form = document.getElementById('generalForm');
@@ -46,7 +55,6 @@ async function saveGeneralInfo() {
   const contacts = Array.from(allRows).map(row => {
     const inputs = row.querySelectorAll('input');
     if (inputs.length === 0) {
-      // Read-only row
       const cells = row.querySelectorAll('td');
       return {
         name: cells[0]?.textContent.trim(),
@@ -55,7 +63,6 @@ async function saveGeneralInfo() {
         role: cells[3]?.textContent.trim()
       };
     } else {
-      // Editable input row
       return {
         name: inputs[0].value,
         number: inputs[1].value,
@@ -65,11 +72,15 @@ async function saveGeneralInfo() {
     }
   });
 
+  // 👇 Append T12:00:00 to avoid timezone offset shifting
+  const start = form.start.value ? `${form.start.value}T12:00:00` : '';
+  const end = form.end.value ? `${form.end.value}T12:00:00` : '';
+
   const general = {
     location: form.location.value,
     weather: form.weather.value,
-    start: form.start.value,
-    end: form.end.value,
+    start,
+    end,
     attendees: parseInt(form.attendees.value) || 0,
     budget: form.budget.value,
     contacts
@@ -86,6 +97,7 @@ async function saveGeneralInfo() {
 
   alert('General information saved!');
 }
+
 
 loadGeneralInfo();
 

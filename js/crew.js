@@ -201,10 +201,24 @@ function renderTableSection() {
 
 function toggleEdit(date, index, editing) {
   const prefix = `row-${date}-${index}`;
-  const row = tableData.rows.filter(r => r.date === date)[index];
+
+  // ✅ Find the correct row by skipping placeholders and matching index
+  let count = -1;
+  const row = tableData.rows.find(r => {
+    if (r.date === date && r.role !== '__placeholder__') {
+      count++;
+      return count === index;
+    }
+    return false;
+  });
+
+  if (!row) {
+    console.error('Row not found for edit:', date, index);
+    return;
+  }
 
   if (editing) {
-    // Name dropdown with add-new logic
+    // 🔁 Name dropdown with add-new logic
     const nameSelectHTML = `
       <select id="${prefix}-name">
         <option value="">-- Select Name --</option>
@@ -214,7 +228,27 @@ function toggleEdit(date, index, editing) {
     `;
     document.getElementById(`${prefix}-name`).outerHTML = nameSelectHTML;
 
-    // Add new name behavior
+    // 🔁 Role dropdown with add-new logic
+    const roleSelectHTML = `
+      <select id="${prefix}-role">
+        <option value="">-- Select Role --</option>
+        ${cachedRoles.map(r => `<option value="${r}" ${r === row.role ? 'selected' : ''}>${r}</option>`).join('')}
+        <option value="__add_new__">➕ Add new role</option>
+      </select>
+    `;
+    document.getElementById(`${prefix}-role`).outerHTML = roleSelectHTML;
+
+    // 🔁 Time inputs
+    document.getElementById(`${prefix}-startTime`).outerHTML =
+      `<input type="time" id="${prefix}-startTime" value="${row.startTime}">`;
+    document.getElementById(`${prefix}-endTime`).outerHTML =
+      `<input type="time" id="${prefix}-endTime" value="${row.endTime}">`;
+
+    // 🔁 Notes input
+    document.getElementById(`${prefix}-notes`).outerHTML =
+      `<input type="text" id="${prefix}-notes" value="${row.notes}">`;
+
+    // 🔁 Event listeners for add-new dropdowns
     setTimeout(() => {
       const nameSelect = document.getElementById(`${prefix}-name`);
       nameSelect.addEventListener('change', () => {
@@ -255,27 +289,7 @@ function toggleEdit(date, index, editing) {
       });
     }, 0);
 
-    // Time inputs
-    document.getElementById(`${prefix}-startTime`).outerHTML =
-      `<input type="time" id="${prefix}-startTime" value="${row.startTime}">`;
-    document.getElementById(`${prefix}-endTime`).outerHTML =
-      `<input type="time" id="${prefix}-endTime" value="${row.endTime}">`;
-
-    // Role dropdown
-    const roleSelectHTML = `
-      <select id="${prefix}-role">
-        <option value="">-- Select Role --</option>
-        ${cachedRoles.map(r => `<option value="${r}" ${r === row.role ? 'selected' : ''}>${r}</option>`).join('')}
-        <option value="__add_new__">➕ Add new role</option>
-      </select>
-    `;
-    document.getElementById(`${prefix}-role`).outerHTML = roleSelectHTML;
-
-    // Notes input
-    document.getElementById(`${prefix}-notes`).outerHTML =
-      `<input type="text" id="${prefix}-notes" value="${row.notes}">`;
-
-    // Live update total hours
+    // 🔁 Live total hours update
     const totalHoursEl = document.getElementById(`${prefix}-totalHours`);
     const updateHours = () => {
       const start = document.getElementById(`${prefix}-startTime`).value;
@@ -286,7 +300,7 @@ function toggleEdit(date, index, editing) {
     document.getElementById(`${prefix}-endTime`).addEventListener('input', updateHours);
   }
 
-  // Toggle buttons
+  // 🔁 Toggle button visibility
   const actionCell = document.getElementById(`row-${date}-${index}`).querySelector('td:last-child');
   const [editBtn, saveBtn] = actionCell.querySelectorAll('button');
   editBtn.style.display = 'none';
@@ -294,13 +308,12 @@ function toggleEdit(date, index, editing) {
 }
 
 
-
-
 async function saveEdit(date, index) {
   const prefix = `row-${date}-${index}`;
   const startTime = document.getElementById(`${prefix}-startTime`).value;
   const endTime = document.getElementById(`${prefix}-endTime`).value;
-  const row = {
+
+  const updatedRow = {
     name: document.getElementById(`${prefix}-name`).value,
     startTime,
     endTime,
@@ -310,20 +323,34 @@ async function saveEdit(date, index) {
     date
   };
 
-  const currentRow = tableData.rows.filter(r => r.date === date)[index];
-  const globalIndex = tableData.rows.findIndex(r => r === currentRow);
+  // 🔍 Manually track the correct global index
+  let count = -1;
+  const globalIndex = tableData.rows.findIndex(r => {
+    if (r.date === date && r.role !== '__placeholder__') {
+      count++;
+      return count === index;
+    }
+    return false;
+  });
 
+  if (globalIndex === -1) {
+    alert('Could not find row to update');
+    return;
+  }
+
+  // ✅ Update the row properly using PUT
   await fetch(`${API_BASE}/api/tables/${tableId}/rows/${globalIndex}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
       Authorization: token
     },
-    body: JSON.stringify(row)
+    body: JSON.stringify(updatedRow)
   });
 
-  await loadTable(); // Will render the table again using plain spans
+  await loadTable();
 }
+
 
 async function deleteRow(date, index) {
   const rowsForDate = tableData.rows.filter(row => row.date === date);

@@ -51,6 +51,28 @@ async function loadGear() {
   }
 }
 
+function deleteGearList() {
+    if (!activeList) return;
+  
+    if (Object.keys(savedGearLists).length === 1) {
+      alert("You must keep at least one gear list.");
+      return;
+    }
+  
+    const confirmed = confirm(`Are you sure you want to delete the list "${activeList}"?`);
+    if (!confirmed) return;
+  
+    delete savedGearLists[activeList];
+  
+    // Switch to the first remaining list
+    activeList = Object.keys(savedGearLists)[0];
+    ensureAllCategoriesExist();
+    populateGearListDropdown();
+    renderGear();
+    triggerAutosave();
+  }
+  
+
 async function loadEventTitle() {
     try {
       const res = await fetch(`${API_BASE}/api/tables/${tableId}`, {

@@ -96,6 +96,8 @@ function renderTableSection() {
     dates.reverse();
   }
 
+  const visibleNames = new Set();
+
   // Render each date section
   dates.forEach(date => {
     const sectionBox = document.createElement('div');
@@ -181,6 +183,10 @@ function renderTableSection() {
         </td>
       `;
       tbody.appendChild(tr);
+
+      if (row.name && row.name.trim()) {
+        visibleNames.add(row.name.trim());
+      }
     });
 
     const actionRow = document.createElement('tr');
@@ -201,8 +207,13 @@ function renderTableSection() {
     container.appendChild(sectionBox);
   });
 
-  updateCrewCount();
+  // ✅ Update dynamic crew count based on visible names
+  const crewCountEl = document.getElementById('crewCount');
+  if (crewCountEl) {
+    crewCountEl.innerHTML = `<strong>Crew Count: ${visibleNames.size}</strong>`;
+  }
 }
+
 
 
 function toggleEdit(date, index, editing) {

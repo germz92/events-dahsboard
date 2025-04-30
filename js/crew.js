@@ -36,11 +36,13 @@ function formatTime(timeStr) {
 
 function formatDateLocal(dateStr) {
   const [year, month, day] = dateStr.split('-').map(Number);
-  const d = new Date(year, month - 1, day);
-  return d.toLocaleDateString('en-US', {
-    year: 'numeric',
+  const date = new Date(year, month - 1, day);
+
+  return date.toLocaleDateString('en-US', {
+    weekday: 'long',
     month: 'long',
-    day: 'numeric'
+    day: 'numeric',
+    year: 'numeric'
   });
 }
 

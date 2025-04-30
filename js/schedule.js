@@ -95,11 +95,7 @@ function renderProgramSections() {
     const matchingPrograms = tableData.programs
       .map((p, i) => ({ ...p, __index: i }))
       .filter(p => p.date === date && matchesSearch(p))
-      .sort((a, b) => {
-        const aStart = a.startTime || '';
-        const bStart = b.startTime || '';
-        return aStart.localeCompare(bStart);
-      });
+      .sort((a, b) => (a.startTime || '').localeCompare(b.startTime || ''));
 
     if (matchingPrograms.length === 0) return;
 
@@ -182,9 +178,7 @@ function renderProgramSections() {
 }
 
 function matchesSearch(program) {
-  if (filterDate !== 'all' && program.date !== filterDate) {
-    return false;
-  }
+  if (filterDate !== 'all' && program.date !== filterDate) return false;
   if (!searchQuery.trim()) return true;
   const lower = searchQuery.toLowerCase();
   return (
@@ -205,7 +199,6 @@ function autoSave(field, date, ignoredIndex, key) {
   field.classList.remove('editing');
   const entry = field.closest('.program-entry');
   const programIndex = parseInt(entry.getAttribute('data-program-index'), 10);
-
   if (!isNaN(programIndex)) {
     tableData.programs[programIndex][key] = field.value.trim();
     scheduleSave();
@@ -214,31 +207,24 @@ function autoSave(field, date, ignoredIndex, key) {
 
 function toggleNotes(button) {
   const notesField = button.nextElementSibling;
-  if (notesField.style.display === 'none' || notesField.style.display === '') {
-    notesField.style.display = 'block';
-    button.textContent = 'Hide Notes';
-    const textarea = notesField.querySelector('textarea');
-    if (textarea) autoResizeTextarea(textarea);
-  } else {
-    notesField.style.display = 'none';
-    button.textContent = 'Show Notes';
-  }
+  const textarea = notesField.querySelector('textarea');
+  const isOpen = notesField.style.display === 'block';
+  notesField.style.display = isOpen ? 'none' : 'block';
+  button.textContent = isOpen ? 'Show Notes' : 'Hide Notes';
+  if (!isOpen && textarea) autoResizeTextarea(textarea);
 }
 
 function toggleAllNotes() {
   const allNotes = document.querySelectorAll('.notes-field');
   const allButtons = document.querySelectorAll('.show-notes-btn');
-
   allNotes.forEach(note => {
     note.style.display = allNotesVisible ? 'none' : 'block';
     const textarea = note.querySelector('textarea');
     if (!allNotesVisible && textarea) autoResizeTextarea(textarea);
   });
-
-  allButtons.forEach(button => {
-    button.textContent = allNotesVisible ? 'Show Notes' : 'Hide Notes';
+  allButtons.forEach(btn => {
+    btn.textContent = allNotesVisible ? 'Show Notes' : 'Hide Notes';
   });
-
   allNotesVisible = !allNotesVisible;
   const toggleBtn = document.getElementById('toggleAllNotesBtn');
   if (toggleBtn) toggleBtn.textContent = allNotesVisible ? 'Hide All Notes' : 'Show All Notes';
@@ -252,14 +238,11 @@ function autoResizeTextarea(textarea) {
 
 function captureCurrentPrograms() {
   const sections = document.querySelectorAll('.date-section');
-  let newPrograms = [];
-
+  tableData.programs = [];
   sections.forEach(section => {
     const date = section.getAttribute('data-date');
-    const entries = section.querySelectorAll('.program-entry');
-
-    entries.forEach(entry => {
-      newPrograms.push({
+    section.querySelectorAll('.program-entry').forEach(entry => {
+      tableData.programs.push({
         date,
         name: entry.querySelector('input.program-name')?.value.trim() || '',
         startTime: entry.querySelector('input[placeholder="Start Time"]')?.value.trim() || '',
@@ -270,23 +253,13 @@ function captureCurrentPrograms() {
       });
     });
   });
-
-  tableData.programs = newPrograms;
 }
 
 function addDateSection() {
   const date = document.getElementById('newDate').value;
   if (!date) return alert('Please select a date');
   captureCurrentPrograms();
-  tableData.programs.push({
-    date,
-    name: '',
-    startTime: '',
-    endTime: '',
-    location: '',
-    photographer: '',
-    notes: '',
-  });
+  tableData.programs.push({ date, name: '', startTime: '', endTime: '', location: '', photographer: '', notes: '' });
   document.getElementById('newDate').value = '';
   renderProgramSections();
   scheduleSave();
@@ -294,25 +267,15 @@ function addDateSection() {
 
 function addProgram(date) {
   captureCurrentPrograms();
-  tableData.programs.push({
-    date,
-    name: '',
-    startTime: '',
-    endTime: '',
-    location: '',
-    photographer: '',
-    notes: '',
-  });
+  tableData.programs.push({ date, name: '', startTime: '', endTime: '', location: '', photographer: '', notes: '' });
   renderProgramSections();
   scheduleSave();
 }
 
 function deleteProgram(button) {
-  const entry = button.closest('.program-entry');
-  const programIndex = parseInt(entry.getAttribute('data-program-index'), 10);
-
-  if (!isNaN(programIndex)) {
-    tableData.programs.splice(programIndex, 1);
+  const index = parseInt(button.closest('.program-entry').getAttribute('data-program-index'), 10);
+  if (!isNaN(index)) {
+    tableData.programs.splice(index, 1);
     renderProgramSections();
     scheduleSave();
   }
@@ -350,7 +313,6 @@ async function loadEventTitle() {
   }
 }
 
-
 window.addEventListener('DOMContentLoaded', () => {
   const newDateInput = document.getElementById('newDate');
   const addDateBtn = document.querySelector('button[onclick="addDateSection()"]');
@@ -359,8 +321,6 @@ window.addEventListener('DOMContentLoaded', () => {
     const toggleNotesBtn = document.createElement('button');
     toggleNotesBtn.id = 'toggleAllNotesBtn';
     toggleNotesBtn.textContent = 'Show All Notes';
-
-    // Styling so it looks like a subtle inline link, not a real button
     toggleNotesBtn.style.fontSize = '16px';
     toggleNotesBtn.style.background = 'none';
     toggleNotesBtn.style.border = 'none';
@@ -371,20 +331,17 @@ window.addEventListener('DOMContentLoaded', () => {
     toggleNotesBtn.style.textDecoration = 'underline';
     toggleNotesBtn.style.alignSelf = 'center';
     toggleNotesBtn.onclick = toggleAllNotes;
-
-    // Insert the toggle button on the same line as the Add Date button
     addDateBtn.insertAdjacentElement('afterend', toggleNotesBtn);
   }
 
+  // Inject search and filter into fixed header
+  const searchContainer = document.getElementById('searchFilterContainer');
   const controlsWrapper = document.createElement('div');
   controlsWrapper.style.display = 'flex';
-  controlsWrapper.style.flexDirection = 'row';
+  controlsWrapper.style.flexWrap = 'wrap';
   controlsWrapper.style.justifyContent = 'center';
-  controlsWrapper.style.alignItems = 'center';
-  controlsWrapper.style.flexWrap = 'nowrap';
-  controlsWrapper.style.overflowX = 'auto';
   controlsWrapper.style.gap = '8px';
-  controlsWrapper.style.padding = '10px';
+  controlsWrapper.style.paddingTop = '10px';
 
   const searchBox = document.createElement('input');
   searchBox.type = 'text';
@@ -408,9 +365,10 @@ window.addEventListener('DOMContentLoaded', () => {
   controlsWrapper.appendChild(searchBox);
   controlsWrapper.appendChild(filterSelect);
 
-  document.body.insertBefore(controlsWrapper, document.getElementById('programSections'));
+  if (searchContainer) {
+    searchContainer.appendChild(controlsWrapper);
+  }
 
   loadPrograms();
   loadEventTitle();
-
 });

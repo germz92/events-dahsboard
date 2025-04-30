@@ -9,14 +9,25 @@
   <script src="js/config.js"></script>
 </head>
 <body>
-  <button onclick="goBack()" style="margin: 12px; background: #ccc;">⬅ Back</button>
-  <h1 id="tableTitle">Crew Call</h1>
-  <h1>Crew Call</h1>
+  <header>
+    <button class="back-btn" onclick="goBack()" style="margin: 12px; background: #ccc;">⬅ Back</button>
+    <div class="crew-title">
+      <div>
+        <h1 id="tableTitle">Crew Call</h1>
+      </div>
+      <div>
+        <h1>Crew Call</h1>
+      </div>
+    </div>
+    <div class="top-nav-bar">
+      <div>
+        <input id="newDate" type="date" placeholder="Select Date">
+        <button class="add-btn" onclick="addDateSection()">+ Add Date</button>
+      </div>
+      <div id="crewCount" style="font-weight: bold;"></div>
+    </div>
 
-  <div class="top-controls">
-    <input type="date" id="newDate" placeholder="Select Date">
-    <button onclick="addDateSection()">Add Date</button>
-  </div>  
+  </header>
 
   <div id="dateSections"></div>
 

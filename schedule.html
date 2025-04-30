@@ -8,18 +8,24 @@
   <link rel="shortcut icon" type="image/x-icon" href="assets/favicon.png">
 </head>
 <body>
-  <button onclick="goBack()" style="background: #ccc; padding: 8px 12px; border-radius: 6px; border: none; cursor: pointer;">⬅ Back</button>
 
-  <!-- Dynamic Event Title -->
-  <h2 id="eventTitle" style="text-align: center; margin-top: 20px;"></h2>
+  <!-- Fixed top section -->
+  <div class="top-controls-fixed">
+    <button onclick="goBack()" class="back-btn">⬅ Back</button>
 
-  <!-- Top Controls: Add Date + Show All Notes -->
-  <div class="top-controls">
-    <input id="newDate" type="date" placeholder="Select Date">
-    <button class="add-btn" onclick="addDateSection()">+ Add Date</button>
+    <h2 id="eventTitle">Program Schedule</h2>
+
+    <!-- Date input + Add Date button -->
+    <div class="top-controls">
+      <input id="newDate" type="date" placeholder="Select Date">
+      <button class="add-btn" onclick="addDateSection()">+ Add Date</button>
+    </div>
+
+    <!-- Injected search bar and date filter will go here -->
+    <div id="searchFilterContainer" class="top-controls"></div>
   </div>
 
-  <!-- Schedule Content -->
+  <!-- Scrollable content -->
   <div id="programSections" class="program-container"></div>
 
   <!-- Scripts -->

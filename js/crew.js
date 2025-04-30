@@ -31,6 +31,7 @@ async function loadTable() {
   tableData = await res.json();
   document.getElementById('tableTitle').textContent = tableData.title;
   renderTableSection();
+  updateCrewCount();
 }
 
 function renderTableSection() {
@@ -292,5 +293,20 @@ function setupRoleDropdown() {
     }, { once: true });
   });
 }
+
+function updateCrewCount() {
+  const names = new Set(
+    tableData.rows
+      .filter(row => row.name?.trim())
+      .map(row => row.name.trim())
+  );
+
+  const count = names.size;
+  const display = document.getElementById('crewCount');
+  if (display) {
+    display.textContent = `Crew Count: ${count}`;
+  }
+}
+
 
 loadTable();

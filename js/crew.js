@@ -165,47 +165,75 @@ function toggleEdit(date, index, editing) {
   const row = tableData.rows.filter(r => r.date === date)[index];
 
   if (editing) {
-    document.getElementById(`${prefix}-name`).outerHTML =
-      `<select id="${prefix}-name">${cachedUsers.map(u => `<option value="${u}" ${u === row.name ? 'selected' : ''}>${u}</option>`).join('')}</select>`;
+    // Name dropdown with add-new logic
+    const nameSelectHTML = `
+      <select id="${prefix}-name">
+        ${cachedUsers.map(u => `<option value="${u}" ${u === row.name ? 'selected' : ''}>${u}</option>`).join('')}
+        <option value="__add_new__">➕ Add new name</option>
+      </select>
+    `;
+    document.getElementById(`${prefix}-name`).outerHTML = nameSelectHTML;
 
+    // Add new name behavior
+    setTimeout(() => {
+      const nameSelect = document.getElementById(`${prefix}-name`);
+      nameSelect.addEventListener('change', () => {
+        if (nameSelect.value === '__add_new__') {
+          const newName = prompt('Enter new name:');
+          if (newName && !cachedUsers.includes(newName)) {
+            cachedUsers.push(newName);
+            cachedUsers.sort();
+            nameSelect.innerHTML = `
+              ${cachedUsers.map(u => `<option value="${u}">${u}</option>`).join('')}
+              <option value="__add_new__">➕ Add new name</option>
+            `;
+            nameSelect.value = newName;
+          } else {
+            nameSelect.value = row.name;
+          }
+        }
+      });
+    }, 0);
+
+    // Time inputs
     document.getElementById(`${prefix}-startTime`).outerHTML =
       `<input type="time" id="${prefix}-startTime" value="${row.startTime}">`;
 
     document.getElementById(`${prefix}-endTime`).outerHTML =
       `<input type="time" id="${prefix}-endTime" value="${row.endTime}">`;
 
-    document.getElementById(`${prefix}-role`).outerHTML =
-      `<select id="${prefix}-role">
+    // Role dropdown
+    document.getElementById(`${prefix}-role`).outerHTML = `
+      <select id="${prefix}-role">
         ${[
           "Lead Photographer", "Additional Photographer", "Lead Videographer",
           "Additional Videographer", "Headshot Booth Photographer", "Assistant"
         ].map(role => `<option value="${role}" ${role === row.role ? 'selected' : ''}>${role}</option>`).join('')}
-      </select>`;
+      </select>
+    `;
 
+    // Notes input
     document.getElementById(`${prefix}-notes`).outerHTML =
       `<input type="text" id="${prefix}-notes" value="${row.notes}">`;
 
+    // Live update total hours
     const totalHoursEl = document.getElementById(`${prefix}-totalHours`);
-    document.getElementById(`${prefix}-startTime`).addEventListener('input', () => {
-      totalHoursEl.textContent = calculateHours(
-        document.getElementById(`${prefix}-startTime`).value,
-        document.getElementById(`${prefix}-endTime`).value
-      );
-    });
-
-    document.getElementById(`${prefix}-endTime`).addEventListener('input', () => {
-      totalHoursEl.textContent = calculateHours(
-        document.getElementById(`${prefix}-startTime`).value,
-        document.getElementById(`${prefix}-endTime`).value
-      );
-    });
+    const updateHours = () => {
+      const start = document.getElementById(`${prefix}-startTime`).value;
+      const end = document.getElementById(`${prefix}-endTime`).value;
+      totalHoursEl.textContent = calculateHours(start, end);
+    };
+    document.getElementById(`${prefix}-startTime`).addEventListener('input', updateHours);
+    document.getElementById(`${prefix}-endTime`).addEventListener('input', updateHours);
   }
 
+  // Toggle buttons
   const actionCell = document.getElementById(`row-${date}-${index}`).querySelector('td:last-child');
   const [editBtn, saveBtn] = actionCell.querySelectorAll('button');
   editBtn.style.display = 'none';
   saveBtn.style.display = '';
 }
+
 
 
 async function saveEdit(date, index) {
@@ -272,27 +300,75 @@ async function deleteDate(date) {
 
 function showRowInputs(date, tbody) {
   const inputRow = document.createElement('tr');
+  const nameId = `name-${date}`;
+  const startId = `start-${date}`;
+  const endId = `end-${date}`;
+  const roleId = `role-${date}`;
+  const notesId = `notes-${date}`;
+  const hoursId = `hours-${date}`;
+
   inputRow.innerHTML = `
-    <td><select id='name-${date}' class='user-select'>
-      ${cachedUsers.map(u => `<option value="${u}">${u}</option>`).join('')}
-    </select></td>
-    <td><input type='time' step='900' id='start-${date}'></td>
-    <td><input type='time' step='900' id='end-${date}'></td>
-    <td><input id='hours-${date}' disabled></td>
-    <td><select id='role-${date}'>
-      <option value="">Select Role</option>
-      <option value="Lead Photographer">Lead Photographer</option>
-      <option value="Additional Photographer">Additional Photographer</option>
-      <option value="Lead Videographer">Lead Videographer</option>
-      <option value="Additional Videographer">Additional Videographer</option>
-      <option value="Headshot Booth Photographer">Headshot Booth Photographer</option>
-      <option value="Assistant">Assistant</option>
-    </select></td>
-    <td><input id='notes-${date}'></td>
+    <td>
+      <select id='${nameId}'>
+        ${cachedUsers.map(u => `<option value="${u}">${u}</option>`).join('')}
+        <option value="__add_new__">➕ Add new name</option>
+      </select>
+    </td>
+    <td><input type='time' step='900' id='${startId}'></td>
+    <td><input type='time' step='900' id='${endId}'></td>
+    <td><input id='${hoursId}' disabled></td>
+    <td>
+      <select id='${roleId}'>
+        <option value="">Select Role</option>
+        <option value="Lead Photographer">Lead Photographer</option>
+        <option value="Additional Photographer">Additional Photographer</option>
+        <option value="Lead Videographer">Lead Videographer</option>
+        <option value="Additional Videographer">Additional Videographer</option>
+        <option value="Headshot Booth Photographer">Headshot Booth Photographer</option>
+        <option value="Assistant">Assistant</option>
+      </select>
+    </td>
+    <td><input id='${notesId}'></td>
     <td><button onclick="addRowToDate('${date}')">Save</button></td>
   `;
   tbody.insertBefore(inputRow, tbody.lastElementChild);
+
+  // Handle Add New Name option
+  setTimeout(() => {
+    const nameSelect = document.getElementById(nameId);
+    nameSelect.addEventListener('change', () => {
+      if (nameSelect.value === '__add_new__') {
+        const newName = prompt('Enter new name:');
+        if (newName && !cachedUsers.includes(newName)) {
+          cachedUsers.push(newName);
+          cachedUsers.sort();
+          nameSelect.innerHTML = `
+            ${cachedUsers.map(u => `<option value="${u}">${u}</option>`).join('')}
+            <option value="__add_new__">➕ Add new name</option>
+          `;
+          nameSelect.value = newName;
+        } else {
+          nameSelect.value = '';
+        }
+      }
+    });
+
+    // Live hours update
+    const startInput = document.getElementById(startId);
+    const endInput = document.getElementById(endId);
+    const hoursInput = document.getElementById(hoursId);
+
+    function updateHours() {
+      const start = startInput.value;
+      const end = endInput.value;
+      hoursInput.value = calculateHours(start, end);
+    }
+
+    startInput.addEventListener('input', updateHours);
+    endInput.addEventListener('input', updateHours);
+  }, 0);
 }
+
 
 async function addDateSection() {
   const date = document.getElementById('newDate').value;

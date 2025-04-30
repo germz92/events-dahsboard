@@ -250,5 +250,10 @@ body {
       }
       
   }
+
+  input[type="time"] {
+    text-align: left !important;
+  }
+  
   
   

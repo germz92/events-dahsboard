@@ -5,107 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gear Checklist</title>
   <link rel="shortcut icon" type="image/x-icon" href="assets/favicon.png">
-  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/gear.css">
   <script src="js/config.js"></script>
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f5f7fa;
-      margin: 0;
-      padding: 40px;
-      color: #333;
-    }
-
-    h1, h2 {
-      text-align: center;
-    }
-
-    h1 {
-      font-size: 26px;
-    }
-
-    .gear-container {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 20px;
-      padding: 20px 0;
-    }
-
-    .category {
-      background: white;
-      border-radius: 12px;
-      padding: 20px;
-      width: 220px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      display: flex;
-      flex-direction: column;
-    }
-
-    .category h3 {
-      margin: 0 0 12px 0;
-      font-size: 1.1rem;
-      color: #3f51b5;
-    }
-
-    .item {
-      display: flex;
-      align-items: center;
-      margin-bottom: 8px;
-      gap: 6px;
-    }
-
-    .item input[type="text"] {
-      flex: 1;
-      padding: 6px 8px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 0.95rem;
-      width: 90%;
-    }
-
-    .item input[type="checkbox"] {
-      width: 20px;
-      height: 20px;
-    }
-
-    .add-btn {
-      background: #3f51b5;
-      color: white;
-      border: none;
-      padding: 8px 12px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 600;
-      margin-top: 12px;
-    }
-
-    .add-btn:hover {
-      background: #2c3ea8;
-    }
-
-    @media (max-width: 768px) {
-      .category {
-        width: 100%;
-        max-width: 100%;
-      }
-
-      .gear-container {
-        padding: 0;
-      }
-    }
-  </style>
 </head>
 <body class="gear-page">
-
-  <button onclick="goBack()" style="background: #ccc; padding: 10px 16px; border-radius: 6px; border: none; cursor: pointer;">⬅ Back</button>
+  <button onclick="goBack()" class="back-button">⬅ Back</button>
   <h2 id="eventTitle" style="margin-bottom: 2px;"></h2>
   <h1>Gear Checklist</h1>
 
-  <!-- ✅ Filter dropdown -->
-  <div style="text-align: center; margin: 10px 0 20px;">
+  <div class="top-controls">
+    <label for="gearListSelect">Gear List:</label>
+    <select id="gearListSelect"></select>
+    <button onclick="createNewGearList()">+ New List</button>
+  </div>
+
+  <div class="filter-controls">
     <label for="filterCheckbox">Filter:</label>
-    <select id="filterCheckbox" style="padding: 6px 10px; font-size: 16px;">
+    <select id="filterCheckbox">
       <option value="all">Show All</option>
       <option value="checked">Checked Only</option>
       <option value="unchecked">Unchecked Only</option>
@@ -114,134 +30,8 @@
 
   <div class="gear-container" id="gearContainer"></div>
 
-  <script>
-    const categories = ["Cameras", "Lenses", "Lighting", "Support", "Accessories"];
-    const token = localStorage.getItem('token');
-    const params = new URLSearchParams(window.location.search);
-    const tableId = params.get('id');
-    let savedGear = {};
-    let saveTimeout;
-    let filterSetting = 'all';
+  <div id="gearStatusMessage" style="margin-top:10px; color: red;"></div>
 
-    function goBack() {
-      window.location.href = `event.html?id=${tableId}`;
-    }
-
-    async function loadGear() {
-      try {
-        const res = await fetch(`${API_BASE}/api/tables/${tableId}/gear`, {
-          headers: { Authorization: token }
-        });
-        if (!res.ok) throw new Error("Failed to fetch gear");
-
-        const data = await res.json();
-        savedGear = data || {};
-
-        const eventRes = await fetch(`${API_BASE}/api/tables/${tableId}`, {
-          headers: { Authorization: token }
-        });
-        if (eventRes.ok) {
-          const table = await eventRes.json();
-          document.getElementById('eventTitle').textContent = table.title;
-        }
-
-        renderGear();
-      } catch (err) {
-        console.error("Error loading gear:", err);
-        document.body.innerHTML = "<h2 style='text-align:center;color:red;'>Failed to load gear data.</h2>";
-      }
-    }
-
-    function renderGear() {
-      const container = document.getElementById("gearContainer");
-      container.innerHTML = "";
-      categories.forEach(createCategory);
-    }
-
-    function createCategory(name) {
-      const section = document.createElement("div");
-      section.className = "category";
-      section.innerHTML = `<h3>${name}</h3><div class="item-list"></div>`;
-      const list = section.querySelector(".item-list");
-
-      (savedGear[name] || []).forEach(item => {
-        if (
-          (filterSetting === "checked" && !item.checked) ||
-          (filterSetting === "unchecked" && item.checked)
-        ) return;
-
-        const el = document.createElement("div");
-        el.className = "item";
-        el.innerHTML = `<input type='checkbox' ${item.checked ? 'checked' : ''}><input type='text' value="${item.label}" />`;
-        list.appendChild(el);
-      });
-
-      const addBtn = document.createElement("button");
-      addBtn.className = "add-btn";
-      addBtn.textContent = "+ Add Item";
-      addBtn.onclick = () => {
-        const row = document.createElement("div");
-        row.className = "item";
-        row.innerHTML = "<input type='checkbox'><input type='text'>";
-        list.appendChild(row);
-        triggerAutosave();
-      };
-
-      section.appendChild(addBtn);
-      document.getElementById("gearContainer").appendChild(section);
-    }
-
-    function collectGearData() {
-      const data = {};
-      document.querySelectorAll(".category").forEach(section => {
-        const name = section.querySelector("h3").textContent;
-        const items = Array.from(section.querySelectorAll(".item")).map(row => {
-          const text = row.querySelector("input[type='text']").value.trim();
-          const checked = row.querySelector("input[type='checkbox']").checked;
-          return text ? { label: text, checked } : null;
-        }).filter(Boolean);
-        data[name] = items;
-      });
-      return data;
-    }
-
-    async function saveGear() {
-      const gearData = collectGearData();
-
-      await fetch(`${API_BASE}/api/tables/${tableId}/gear`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: token
-        },
-        body: JSON.stringify({ gear: gearData })
-      });
-    }
-
-    function triggerAutosave() {
-      clearTimeout(saveTimeout);
-      saveTimeout = setTimeout(saveGear, 500);
-    }
-
-    window.addEventListener("DOMContentLoaded", async () => {
-      await loadGear();
-
-      document.getElementById('gearContainer').addEventListener('input', () => {
-        triggerAutosave();
-      });
-
-      document.getElementById('gearContainer').addEventListener('change', () => {
-        triggerAutosave();
-      });
-
-      document.getElementById("filterCheckbox").addEventListener("change", e => {
-        filterSetting = e.target.value;
-        renderGear();
-      });
-    });
-
-    window.addEventListener("beforeunload", saveGear);
-  </script>
-
+  <script src="js/gear.js"></script>
 </body>
 </html>

@@ -131,13 +131,13 @@ function renderTableSection() {
     table.style.width = '100%';
     table.innerHTML = `
       <colgroup>
-        <col style="width: 17%;">
-        <col style="width: 10%;">
-        <col style="width: 10%;">
+        <col style="width: 16%;">
+        <col style="width: 12%;">
+        <col style="width: 12%;">
         <col style="width: 8%;">
-        <col style="width: 20%;">
-        <col style="width: 20%;">
-        <col style="width: 15%;">
+        <col style="width: 19%;">
+        <col style="width: 19%;">
+        <col style="width: 14%;">
       </colgroup>
     `;
 
@@ -147,7 +147,7 @@ function renderTableSection() {
         <th>Name</th>
         <th>Start</th>
         <th>End</th>
-        <th>Total Hours</th>
+        <th>Total</th>
         <th>Role</th>
         <th>Notes</th>
         <th>Action</th>

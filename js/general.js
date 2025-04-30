@@ -7,18 +7,40 @@ if (!tableId) {
   window.location.href = 'event.html';
 }
 
-function addContactRow(contact = {}) {
+function addContactRow(contact = {}, isReadOnly = false) {
   const container = document.getElementById('contactRows');
   const row = document.createElement('tr');
-  row.innerHTML = `
-    <td><input name="contactName" placeholder="Name" value="${contact.name || ''}" /></td>
-    <td><input name="contactNumber" placeholder="Number" value="${contact.number || ''}" /></td>
-    <td><input name="contactEmail" placeholder="E-Mail Address" value="${contact.email || ''}" /></td>
-    <td><input name="contactRole" placeholder="Role" value="${contact.role || ''}" /></td>
-    <td><button type="button" class="delete-btn" onclick="this.closest('tr').remove()">🗑</button></td>
-  `;
+
+  if (isReadOnly) {
+    row.innerHTML = `
+      <td>${contact.name || ''}</td>
+      <td>
+        ${contact.number
+          ? `<a href="tel:${contact.number}">${contact.number}</a>`
+          : ''}
+      </td>
+      <td>
+        ${contact.email
+          ? `<a href="mailto:${contact.email}">${contact.email}</a>`
+          : ''}
+      </td>
+      <td>${contact.role || ''}</td>
+      <td><button type="button" class="delete-btn" onclick="this.closest('tr').remove()">🗑</button></td>
+    `;
+  }
+   else {
+    row.innerHTML = `
+      <td><textarea name="contactName" placeholder="Name">${contact.name || ''}</textarea></td>
+      <td><textarea name="contactNumber" placeholder="Number">${contact.number || ''}</textarea></td>
+      <td><textarea name="contactEmail" placeholder="E-Mail Address">${contact.email || ''}</textarea></td>
+      <td><textarea name="contactRole" placeholder="Role">${contact.role || ''}</textarea></td>
+      <td><button type="button" class="delete-btn" onclick="this.closest('tr').remove()">🗑</button></td>
+    `;
+  }
+
   container.appendChild(row);
 }
+
 
 
 function formatDateInput(isoStr) {
@@ -43,7 +65,7 @@ async function loadGeneralInfo() {
   form.attendees.value = data.attendees || '';
   form.budget.value = data.budget || '';
 
-  (data.contacts || []).forEach(contact => addContactRow(contact));
+  (data.contacts || []).forEach(contact => addContactRow(contact, true));
 }
 
 
@@ -53,8 +75,15 @@ async function saveGeneralInfo() {
   const allRows = container.querySelectorAll('tr');
 
   const contacts = Array.from(allRows).map(row => {
-    const inputs = row.querySelectorAll('input');
-    if (inputs.length === 0) {
+    const fields = row.querySelectorAll('input, textarea');
+    if (fields.length) {
+      return {
+        name: fields[0].value,
+        number: fields[1].value,
+        email: fields[2].value,
+        role: fields[3].value
+      };
+    } else {
       const cells = row.querySelectorAll('td');
       return {
         name: cells[0]?.textContent.trim(),
@@ -62,14 +91,8 @@ async function saveGeneralInfo() {
         email: cells[2]?.textContent.trim(),
         role: cells[3]?.textContent.trim()
       };
-    } else {
-      return {
-        name: inputs[0].value,
-        number: inputs[1].value,
-        email: inputs[2].value,
-        role: inputs[3].value
-      };
     }
+      
   });
 
   // 👇 Append T12:00:00 to avoid timezone offset shifting

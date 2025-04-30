@@ -120,12 +120,12 @@ function renderProgramSections() {
           onfocus="enableEdit(this)" onblur="autoSave(this, '${program.date}', ${program.__index}, 'name')">
 
         <div style="display: flex; align-items: center; gap: 3px;">
-          <input type="time" placeholder="Start Time" style="flex: 1; min-width: 0;"
+          <input type="time" placeholder="Start Time" style="flex: 1; min-width: 0; text-align: left;"
             value="${program.startTime || ''}"
             onfocus="enableEdit(this)"
             onblur="autoSave(this, '${program.date}', ${program.__index}, 'startTime')">
 
-          <input type="time" placeholder="End Time" style="flex: 1; min-width: 0;"
+          <input type="time" placeholder="End Time" style="flex: 1; min-width: 0; text-align: left;"
             value="${program.endTime || ''}"
             onfocus="enableEdit(this)"
             onblur="autoSave(this, '${program.date}', ${program.__index}, 'endTime')">
@@ -176,6 +176,7 @@ function renderProgramSections() {
     document.querySelectorAll('textarea').forEach(autoResizeTextarea);
   }, 50);
 }
+
 
 function matchesSearch(program) {
   if (filterDate !== 'all' && program.date !== filterDate) return false;

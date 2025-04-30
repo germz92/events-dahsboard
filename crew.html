@@ -27,16 +27,19 @@
   
       <!-- ✅ Corrected class name -->
       <div class="filter-sort-bar">
-        <label for="filterDate">Show:</label>
+        <label for="filterDate"></label>
         <select id="filterDate" onchange="renderTableSection()">
           <option value="">Show All</option>
         </select>
   
-        <label for="sortDirection">Sort:</label>
+        <label for="sortDirection"></label>
         <select id="sortDirection" onchange="renderTableSection()">
           <option value="asc">Oldest First</option>
           <option value="desc">Newest First</option>
         </select>
+        <div class="search-bar">
+          <input type="text" id="searchInput" placeholder="Search crew..." oninput="renderTableSection()">
+        </div>        
       </div>
     </div>
   </header>

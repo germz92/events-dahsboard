@@ -72,32 +72,31 @@ function renderTableSection() {
 
   const filterDropdown = document.getElementById('filterDate');
   const sortDirection = document.getElementById('sortDirection')?.value || 'asc';
+  const searchQuery = document.getElementById('searchInput')?.value.toLowerCase() || '';
 
-  // Extract unique dates from table rows
+  // Extract and sort unique dates
   let dates = [...new Set(tableData.rows.map(row => row.date))];
-
-  // Sort dates ascending for dropdown and rendering
   dates.sort((a, b) => new Date(a) - new Date(b));
 
-  // Update date filter dropdown with actual dates
+  // Update date filter dropdown
   if (filterDropdown) {
     const currentValue = filterDropdown.value;
     filterDropdown.innerHTML = `<option value="">Show All</option>` +
       dates.map(d => `<option value="${d}" ${d === currentValue ? 'selected' : ''}>${formatDateLocal(d)}</option>`).join('');
   }
 
-  // Filter by selected date
+  // Apply selected date filter
   const selectedDate = filterDropdown?.value;
   if (selectedDate) {
     dates = dates.filter(d => d === selectedDate);
   }
 
-  // Sort dates based on selected sort direction
+  // Apply sort direction
   if (sortDirection === 'desc') {
     dates.reverse();
   }
 
-  // Render each section per date
+  // Render each date section
   dates.forEach(date => {
     const sectionBox = document.createElement('div');
     sectionBox.className = 'date-section';
@@ -155,28 +154,34 @@ function renderTableSection() {
     table.appendChild(thead);
 
     const tbody = document.createElement('tbody');
-    tableData.rows
-      .filter(row => row.date === date && row.role !== '__placeholder__')
-      .forEach((row, index) => {
-        const rowId = `row-${date}-${index}`;
-        const tr = document.createElement('tr');
-        tr.id = rowId;
 
-        tr.innerHTML = `
-          <td><span id="${rowId}-name">${row.name}</span></td>
-          <td><span id="${rowId}-startTime">${formatTime(row.startTime)}</span></td>
-          <td><span id="${rowId}-endTime">${formatTime(row.endTime)}</span></td>
-          <td id="${rowId}-totalHours">${row.totalHours}</td>
-          <td><span id="${rowId}-role">${row.role}</span></td>
-          <td><span id="${rowId}-notes">${row.notes}</span></td>
-          <td style="text-align: center;">
-            <button onclick="toggleEdit('${date}', ${index}, true)">✏️</button>
-            <button onclick="saveEdit('${date}', ${index})" style="display:none;">💾</button>
-            <button onclick="deleteRow('${date}', ${index})" title="Delete" style="background: transparent; border: none; font-size: 18px; cursor: pointer;">🗑️</button>
-          </td>
-        `;
-        tbody.appendChild(tr);
+    const visibleRows = tableData.rows
+      .filter(row => {
+        if (row.date !== date || row.role === '__placeholder__') return false;
+        const text = [row.name, row.role, row.notes].join(' ').toLowerCase();
+        return text.includes(searchQuery);
       });
+
+    visibleRows.forEach((row, index) => {
+      const rowId = `row-${date}-${index}`;
+      const tr = document.createElement('tr');
+      tr.id = rowId;
+
+      tr.innerHTML = `
+        <td><span id="${rowId}-name">${row.name}</span></td>
+        <td><span id="${rowId}-startTime">${formatTime(row.startTime)}</span></td>
+        <td><span id="${rowId}-endTime">${formatTime(row.endTime)}</span></td>
+        <td id="${rowId}-totalHours">${row.totalHours}</td>
+        <td><span id="${rowId}-role">${row.role}</span></td>
+        <td><span id="${rowId}-notes">${row.notes}</span></td>
+        <td style="text-align: center;">
+          <button onclick="toggleEdit('${date}', ${index}, true)">✏️</button>
+          <button onclick="saveEdit('${date}', ${index})" style="display:none;">💾</button>
+          <button onclick="deleteRow('${date}', ${index})" title="Delete" style="background: transparent; border: none; font-size: 18px; cursor: pointer;">🗑️</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
 
     const actionRow = document.createElement('tr');
     const actionTd = document.createElement('td');
@@ -198,6 +203,7 @@ function renderTableSection() {
 
   updateCrewCount();
 }
+
 
 function toggleEdit(date, index, editing) {
   const prefix = `row-${date}-${index}`;

@@ -10,25 +10,38 @@
 </head>
 <body>
   <header>
-    <button class="back-btn" onclick="goBack()" style="margin: 12px; background: #ccc;">⬅ Back</button>
-    <div class="crew-title">
-      <div>
-        <h1 id="tableTitle">Crew Call</h1>
+    <div class="header-inner">
+      <button class="back-btn" onclick="goBack()" style="background: #ccc;">⬅ Back</button>
+  
+      <div class="crew-title">
+        <h1 id="tableTitle">Zenith Live 2025</h1>
+        <h2>Crew Call</h2>
       </div>
-      <div>
-        <h1>Crew Call</h1>
-      </div>
-    </div>
-    <div class="top-nav-bar">
-      <div>
-        <input id="newDate" type="date" placeholder="Select Date">
+  
+      <!-- ✅ Corrected class name -->
+      <div class="top-nav-bar">
+        <input id="newDate" type="date">
         <button class="add-btn" onclick="addDateSection()">+ Add Date</button>
+        <div id="crewCount"><strong>Crew Count: 0</strong></div>
       </div>
-      <div id="crewCount" style="font-weight: bold;"></div>
+  
+      <!-- ✅ Corrected class name -->
+      <div class="filter-sort-bar">
+        <label for="filterDate">Show:</label>
+        <select id="filterDate" onchange="renderTableSection()">
+          <option value="">Show All</option>
+        </select>
+  
+        <label for="sortDirection">Sort:</label>
+        <select id="sortDirection" onchange="renderTableSection()">
+          <option value="asc">Oldest First</option>
+          <option value="desc">Newest First</option>
+        </select>
+      </div>
     </div>
-
   </header>
-
+  
+  
   <div id="dateSections"></div>
 
   <template id="tableTemplate">

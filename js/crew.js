@@ -3,6 +3,14 @@ const tableId = params.get('id');
 const token = localStorage.getItem('token');
 let tableData = null;
 let cachedUsers = [];
+let cachedRoles = [
+  "Lead Photographer",
+  "Additional Photographer",
+  "Lead Videographer",
+  "Additional Videographer",
+  "Headshot Booth Photographer",
+  "Assistant"
+];
 
 function goBack() {
   window.location.href = `event.html?id=${tableId}`;
@@ -41,9 +49,10 @@ async function loadTable() {
     headers: { Authorization: token }
   });
   tableData = await res.json();
-  await preloadUsers();
+  if (!cachedUsers.length) await preloadUsers();
   document.getElementById('tableTitle').textContent = tableData.title;
   renderTableSection();
+  updateCrewCount();
 }
 
 async function preloadUsers() {
@@ -59,7 +68,34 @@ function renderTableSection() {
   const container = document.getElementById('dateSections');
   container.innerHTML = '';
 
-  const dates = [...new Set(tableData.rows.map(row => row.date))];
+  const filterDropdown = document.getElementById('filterDate');
+  const sortDirection = document.getElementById('sortDirection')?.value || 'asc';
+
+  // Extract unique dates from table rows
+  let dates = [...new Set(tableData.rows.map(row => row.date))];
+
+  // Sort dates ascending for dropdown and rendering
+  dates.sort((a, b) => new Date(a) - new Date(b));
+
+  // Update date filter dropdown with actual dates
+  if (filterDropdown) {
+    const currentValue = filterDropdown.value;
+    filterDropdown.innerHTML = `<option value="">Show All</option>` +
+      dates.map(d => `<option value="${d}" ${d === currentValue ? 'selected' : ''}>${formatDateLocal(d)}</option>`).join('');
+  }
+
+  // Filter by selected date
+  const selectedDate = filterDropdown?.value;
+  if (selectedDate) {
+    dates = dates.filter(d => d === selectedDate);
+  }
+
+  // Sort dates based on selected sort direction
+  if (sortDirection === 'desc') {
+    dates.reverse();
+  }
+
+  // Render each section per date
   dates.forEach(date => {
     const sectionBox = document.createElement('div');
     sectionBox.className = 'date-section';
@@ -157,8 +193,9 @@ function renderTableSection() {
     sectionBox.appendChild(wrapper);
     container.appendChild(sectionBox);
   });
-}
 
+  updateCrewCount();
+}
 
 function toggleEdit(date, index, editing) {
   const prefix = `row-${date}-${index}`;
@@ -168,6 +205,7 @@ function toggleEdit(date, index, editing) {
     // Name dropdown with add-new logic
     const nameSelectHTML = `
       <select id="${prefix}-name">
+        <option value="">-- Select Name --</option>
         ${cachedUsers.map(u => `<option value="${u}" ${u === row.name ? 'selected' : ''}>${u}</option>`).join('')}
         <option value="__add_new__">➕ Add new name</option>
       </select>
@@ -184,12 +222,32 @@ function toggleEdit(date, index, editing) {
             cachedUsers.push(newName);
             cachedUsers.sort();
             nameSelect.innerHTML = `
+              <option value="">-- Select Name --</option>
               ${cachedUsers.map(u => `<option value="${u}">${u}</option>`).join('')}
               <option value="__add_new__">➕ Add new name</option>
             `;
             nameSelect.value = newName;
           } else {
-            nameSelect.value = row.name;
+            nameSelect.value = row.name || '';
+          }
+        }
+      });
+
+      const roleSelect = document.getElementById(`${prefix}-role`);
+      roleSelect.addEventListener('change', () => {
+        if (roleSelect.value === '__add_new__') {
+          const newRole = prompt('Enter new role:');
+          if (newRole && !cachedRoles.includes(newRole)) {
+            cachedRoles.push(newRole);
+            cachedRoles.sort();
+            roleSelect.innerHTML = `
+              <option value="">-- Select Role --</option>
+              ${cachedRoles.map(r => `<option value="${r}">${r}</option>`).join('')}
+              <option value="__add_new__">➕ Add new role</option>
+            `;
+            roleSelect.value = newRole;
+          } else {
+            roleSelect.value = row.role || '';
           }
         }
       });
@@ -198,19 +256,18 @@ function toggleEdit(date, index, editing) {
     // Time inputs
     document.getElementById(`${prefix}-startTime`).outerHTML =
       `<input type="time" id="${prefix}-startTime" value="${row.startTime}">`;
-
     document.getElementById(`${prefix}-endTime`).outerHTML =
       `<input type="time" id="${prefix}-endTime" value="${row.endTime}">`;
 
     // Role dropdown
-    document.getElementById(`${prefix}-role`).outerHTML = `
+    const roleSelectHTML = `
       <select id="${prefix}-role">
-        ${[
-          "Lead Photographer", "Additional Photographer", "Lead Videographer",
-          "Additional Videographer", "Headshot Booth Photographer", "Assistant"
-        ].map(role => `<option value="${role}" ${role === row.role ? 'selected' : ''}>${role}</option>`).join('')}
+        <option value="">-- Select Role --</option>
+        ${cachedRoles.map(r => `<option value="${r}" ${r === row.role ? 'selected' : ''}>${r}</option>`).join('')}
+        <option value="__add_new__">➕ Add new role</option>
       </select>
     `;
+    document.getElementById(`${prefix}-role`).outerHTML = roleSelectHTML;
 
     // Notes input
     document.getElementById(`${prefix}-notes`).outerHTML =
@@ -233,6 +290,7 @@ function toggleEdit(date, index, editing) {
   editBtn.style.display = 'none';
   saveBtn.style.display = '';
 }
+
 
 
 
@@ -310,6 +368,7 @@ function showRowInputs(date, tbody) {
   inputRow.innerHTML = `
     <td>
       <select id='${nameId}'>
+        <option value="">-- Select Name --</option>
         ${cachedUsers.map(u => `<option value="${u}">${u}</option>`).join('')}
         <option value="__add_new__">➕ Add new name</option>
       </select>
@@ -319,13 +378,9 @@ function showRowInputs(date, tbody) {
     <td><input id='${hoursId}' disabled></td>
     <td>
       <select id='${roleId}'>
-        <option value="">Select Role</option>
-        <option value="Lead Photographer">Lead Photographer</option>
-        <option value="Additional Photographer">Additional Photographer</option>
-        <option value="Lead Videographer">Lead Videographer</option>
-        <option value="Additional Videographer">Additional Videographer</option>
-        <option value="Headshot Booth Photographer">Headshot Booth Photographer</option>
-        <option value="Assistant">Assistant</option>
+        <option value="">-- Select Role --</option>
+        ${cachedRoles.map(r => `<option value="${r}">${r}</option>`).join('')}
+        <option value="__add_new__">➕ Add new role</option>
       </select>
     </td>
     <td><input id='${notesId}'></td>
@@ -333,7 +388,6 @@ function showRowInputs(date, tbody) {
   `;
   tbody.insertBefore(inputRow, tbody.lastElementChild);
 
-  // Handle Add New Name option
   setTimeout(() => {
     const nameSelect = document.getElementById(nameId);
     nameSelect.addEventListener('change', () => {
@@ -343,6 +397,7 @@ function showRowInputs(date, tbody) {
           cachedUsers.push(newName);
           cachedUsers.sort();
           nameSelect.innerHTML = `
+            <option value="">-- Select Name --</option>
             ${cachedUsers.map(u => `<option value="${u}">${u}</option>`).join('')}
             <option value="__add_new__">➕ Add new name</option>
           `;
@@ -353,7 +408,25 @@ function showRowInputs(date, tbody) {
       }
     });
 
-    // Live hours update
+    const roleSelect = document.getElementById(roleId);
+    roleSelect.addEventListener('change', () => {
+      if (roleSelect.value === '__add_new__') {
+        const newRole = prompt('Enter new role:');
+        if (newRole && !cachedRoles.includes(newRole)) {
+          cachedRoles.push(newRole);
+          cachedRoles.sort();
+          roleSelect.innerHTML = `
+            <option value="">-- Select Role --</option>
+            ${cachedRoles.map(r => `<option value="${r}">${r}</option>`).join('')}
+            <option value="__add_new__">➕ Add new role</option>
+          `;
+          roleSelect.value = newRole;
+        } else {
+          roleSelect.value = '';
+        }
+      }
+    });
+
     const startInput = document.getElementById(startId);
     const endInput = document.getElementById(endId);
     const hoursInput = document.getElementById(hoursId);
@@ -368,6 +441,7 @@ function showRowInputs(date, tbody) {
     endInput.addEventListener('input', updateHours);
   }, 0);
 }
+
 
 
 async function addDateSection() {
@@ -432,5 +506,23 @@ async function addRowToDate(date) {
 
   await loadTable();
 }
+
+function updateCrewCount() {
+  const names = tableData.rows
+    .map(row => (row.name || '').trim())
+    .filter(name => name.length > 0);
+
+  const uniqueNames = [...new Set(names)];
+  const crewCountEl = document.getElementById('crewCount');
+  if (crewCountEl) {
+    crewCountEl.innerHTML = `<strong>Crew Count: ${uniqueNames.length}</strong>`;
+  }
+}
+
+function clearDateFilter() {
+  document.getElementById('filterDate').value = '';
+  renderTableSection();
+}
+
 
 loadTable();

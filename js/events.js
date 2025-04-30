@@ -1,119 +1,152 @@
-const token = localStorage.getItem('token');
-const params = new URLSearchParams(window.location.search);
-const tableId = params.get('id');
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('Not logged in');
+      window.location.href = 'login.html';
+    }
 
-if (!token) {
-  alert('Not logged in');
-  window.location.href = 'login.html';
-}
+    const fullName = localStorage.getItem('fullName') || 'User';
+    document.getElementById('usernameDisplay').textContent = `Welcome, ${fullName}`;
 
-if (!tableId) {
-  alert('Missing table ID. Returning to events page...');
-  window.location.href = 'event.html';
-}
+    let currentTableId = null;
 
-function addContactRow(contact = {}) {
-  const container = document.getElementById('contactRows');
-  const row = document.createElement('div');
-  row.className = 'contact-row';
-  row.innerHTML = `
-    <input name="contactName" placeholder="Name" value="${contact.name || ''}" />
-    <input name="contactNumber" placeholder="Number" value="${contact.number || ''}" />
-    <input name="contactEmail" placeholder="E-Mail Address" value="${contact.email || ''}" />
-    <input name="contactRole" placeholder="Role" value="${contact.role || ''}" />
-    <button type="button" onclick="this.parentElement.remove()" style="background:#e74c3c; color:white; border:none; border-radius:4px; padding:6px 10px; cursor:pointer;">🗑</button>
-  `;
-  container.appendChild(row);
-}
+    function showCreateModal() {
+      document.getElementById('createModal').style.display = 'flex';
+    }
 
-async function loadGeneralInfo() {
-  const res = await fetch(`${API_BASE}/api/tables/${tableId}/general`, {
-    headers: { Authorization: token }
-  });
-  const data = await res.json();
+    function hideCreateModal() {
+      document.getElementById('createModal').style.display = 'none';
+    }
 
-  const form = document.getElementById('generalForm');
-  form.location.value = data.location || '';
-  form.weather.value = data.weather || '';
-  form.start.value = data.start || '';
-  form.end.value = data.end || '';
-  form.attendees.value = data.attendees || '';
-  form.budget.value = data.budget || '';
+    async function submitCreate() {
+      const title = document.getElementById('newTitle').value;
+      const client = document.getElementById('newClient').value;
+      const start = document.getElementById('newStart').value;
+      const end = document.getElementById('newEnd').value;
 
-  (data.contacts || []).forEach(contact => addContactRow(contact));
-}
+      const res = await fetch(`${API_BASE}/api/tables`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: token
+        },
+        body: JSON.stringify({ title, general: { client, start, end } })
+      });
 
-async function saveGeneralInfo() {
-  const form = document.getElementById('generalForm');
-  const contacts = Array.from(document.querySelectorAll('#contactRows .contact-row')).map(row => {
-    const fields = row.querySelectorAll('input');
-    return {
-      name: fields[0].value,
-      number: fields[1].value,
-      email: fields[2].value,
-      role: fields[3].value
-    };
-  });
+      await res.json();
+      hideCreateModal();
+      loadTables();
+    }
 
-  const general = {
-    location: form.location.value,
-    weather: form.weather.value,
-    start: form.start.value,
-    end: form.end.value,
-    attendees: parseInt(form.attendees.value) || 0,
-    budget: form.budget.value,
-    contacts
-  };
+    async function loadTables() {
+      const res = await fetch(`${API_BASE}/api/tables`, {
+        headers: { Authorization: token }
+      });
 
-  await fetch(`${API_BASE}/api/tables/${tableId}/general`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: token
-    },
-    body: JSON.stringify(general)
-  });
+      let tables = await res.json();
 
-  alert('General information saved!');
-}
+      // Sort logic
+      const sortValue = document.getElementById('sortDropdown')?.value || 'newest';
+      tables.sort((a, b) => {
+        const dateA = new Date(a.general?.start || a.createdAt || 0);
+        const dateB = new Date(b.general?.start || b.createdAt || 0);
+        if (sortValue === 'newest') return dateB - dateA;
+        if (sortValue === 'oldest') return dateA - dateB;
+        if (sortValue === 'title') return (a.title || '').localeCompare(b.title || '');
+        return 0;
+      });
 
-loadGeneralInfo();
+      const list = document.getElementById('tableList');
+      list.innerHTML = '';
 
-function goBack() {
-  window.location.href = `event.html?id=${tableId}`;
-}
+      tables.forEach(table => {
+        const general = table.general || {};
+        const client = general.client || 'N/A';
+        const start = general.start ? new Date(general.start).toLocaleDateString() : 'N/A';
+        const end = general.end ? new Date(general.end).toLocaleDateString() : 'N/A';
 
-// Additional functions for listing tables (migrated from other context)
-async function createTable() {
-  const res = await fetch(`${API_BASE}/api/tables`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: token
-    },
-    body: JSON.stringify({ title: document.getElementById('tableTitle').value })
-  });
-  await res.json();
-  loadTables();
-}
+        const card = document.createElement('div');
+        card.className = 'table-card';
 
-async function loadTables() {
-  const res = await fetch(`${API_BASE}/api/tables`, {
-    headers: { Authorization: token }
-  });
-  const tables = await res.json();
-  const list = document.getElementById('tableList');
-  list.innerHTML = '';
-  tables.forEach(table => {
-    const li = document.createElement('li');
-    const btn = document.createElement('button');
-    btn.textContent = 'Open';
-    btn.onclick = () => window.location.href = `event.html?id=${table._id}`;
-    li.textContent = table.title + ' ';
-    li.appendChild(btn);
-    list.appendChild(li);
-  });
-}
+        const header = document.createElement('div');
+        header.className = 'event-header';
 
-// Optionally call loadTables if needed here
-// loadTables();
+        const title = document.createElement('h3');
+        title.textContent = table.title;
+
+        const details = document.createElement('div');
+        details.className = 'event-details';
+        details.innerHTML = `Client: ${client} <br> ${start} - ${end}`;
+
+        header.appendChild(title);
+        header.appendChild(details);
+
+        const actions = document.createElement('div');
+        actions.className = 'action-buttons';
+
+        const openBtn = document.createElement('button');
+        openBtn.className = 'btn-open';
+        openBtn.textContent = 'Open';
+        openBtn.onclick = () => {
+          window.location.href = `event.html?id=${table._id}`;
+        };
+
+        const shareBtn = document.createElement('button');
+        shareBtn.className = 'btn-share';
+        shareBtn.textContent = 'Share';
+        shareBtn.onclick = () => {
+          currentTableId = table._id;
+          document.getElementById('shareModal').style.display = 'flex';
+        };
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'btn-delete';
+        deleteBtn.textContent = 'Delete';
+        deleteBtn.onclick = async () => {
+          if (confirm('Are you sure you want to delete this table?')) {
+            await fetch(`${API_BASE}/api/tables/${table._id}`, {
+              method: 'DELETE',
+              headers: { Authorization: token }
+            });
+            loadTables();
+          }
+        };
+
+        actions.append(openBtn, shareBtn, deleteBtn);
+        card.append(header, actions);
+        list.appendChild(card);
+      });
+    }
+
+    function closeModal() {
+      document.getElementById('shareModal').style.display = 'none';
+      document.getElementById('shareEmail').value = '';
+    }
+
+    async function submitShare() {
+      const email = document.getElementById('shareEmail').value;
+      if (!email || !currentTableId) return alert('Missing info');
+
+      const res = await fetch(`${API_BASE}/api/tables/${currentTableId}/share`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: token
+        },
+        body: JSON.stringify({ email })
+      });
+
+      const result = await res.json();
+      alert(result.message || result.error || 'Done');
+      closeModal();
+    }
+
+    function logout() {
+      localStorage.removeItem('fullName');
+      localStorage.removeItem('token');
+      window.location.href = 'index.html';
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('sortDropdown')?.addEventListener('change', loadTables);
+      loadTables();
+    });

@@ -13,13 +13,13 @@
   <h2 id="eventTitle" style="margin-bottom: 2px;"></h2>
   <h1>Gear Checklist</h1>
 
-  <div class="top-controls">
+  <div class="top-controls" style="flex-wrap: wrap; gap: 8px;">
     <label for="gearListSelect">Gear List:</label>
     <select id="gearListSelect"></select>
     <button onclick="createNewGearList()">+ New List</button>
-    <button onclick="deleteGearList()" style="background-color: #e74c3c;">🗑 Delete List</button>
+    <button onclick="saveGearList()">💾 Save</button>
+    <button onclick="deleteGearList()" style="background-color: #e74c3c;">🗑 Delete</button>
   </div>
-  
 
   <div class="filter-controls">
     <label for="filterCheckbox">Filter:</label>

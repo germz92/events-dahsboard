@@ -212,6 +212,37 @@
       row.remove();
     }
 
+    function addRow(tableId) {
+      if (!editMode) return;
+
+      const table = document.getElementById(tableId).querySelector("tbody");
+      const row = document.createElement("tr");
+
+      if (tableId === 'travelTable') {
+        row.innerHTML = `
+          <td class="date"><input type="date" value=""></td>
+          <td class="time"><input type="time" value=""></td>
+          <td class="text"><textarea></textarea></td>
+          <td class="text"><textarea></textarea></td>
+          <td class="text"><textarea></textarea></td>
+          <td class="action"><button class="delete-btn" onclick="removeRow(this)">🗑️</button></td>
+        `;
+      } else {
+        row.innerHTML = `
+          <td class="date"><input type="date" value=""></td>
+          <td class="date"><input type="date" value=""></td>
+          <td class="text"><textarea></textarea></td>
+          <td class="text"><textarea></textarea></td>
+          <td class="text"><textarea></textarea></td>
+          <td class="action"><button class="delete-btn" onclick="removeRow(this)">🗑️</button></td>
+        `;
+      }
+
+      table.appendChild(row);
+      row.querySelectorAll('textarea').forEach(autoResizeTextarea);
+    }
+
+
     window.addEventListener("DOMContentLoaded", async () => {
       const res = await fetch(`${API_BASE}/api/tables/${tableId}`, {
         headers: { Authorization: token }

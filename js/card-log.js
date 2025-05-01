@@ -5,12 +5,7 @@ const cameras = ["A7IV-A", "A7IV-B", "A7IV-C", "A7IV-D", "A7IV-E", "A7RV-A", "FX
 async function loadUsers() {
   const token = localStorage.getItem('token');
   const res = await fetch(`${API_BASE}/api/users`, { headers: { Authorization: token } });
-
-  if (!res.ok) {
-    console.error('Failed to fetch users');
-    return;
-  }
-
+  if (!res.ok) return console.error('Failed to fetch users');
   const data = await res.json();
   users = data.map(u => u.fullName?.trim()).filter(Boolean).sort((a, b) => a.localeCompare(b));
 }
@@ -19,18 +14,11 @@ async function loadCardLog() {
   const token = localStorage.getItem('token');
   const eventId = localStorage.getItem('eventId');
   const res = await fetch(`${API_BASE}/api/tables/${eventId}`, { headers: { Authorization: token } });
-
-  if (!res.ok) {
-    console.error('Failed to load table data');
-    return;
-  }
-
+  if (!res.ok) return console.error('Failed to load table data');
   const table = await res.json();
   if (!table.cardLog || table.cardLog.length === 0) return;
-
   const container = document.getElementById('table-container');
-  container.innerHTML = ''; // Clear old data
-
+  container.innerHTML = '';
   table.cardLog.forEach(day => addDaySection(day.date, day.entries));
 }
 
@@ -39,7 +27,6 @@ function addDaySection(date, entries = []) {
   const dayDiv = document.createElement('div');
   dayDiv.className = 'day-table';
   dayDiv.id = `day-${date}`;
-
   dayDiv.innerHTML = `
     <div style="display: flex; align-items: center; justify-content: center;">
       <h3 style="margin: 0;">${date}</h3>
@@ -51,7 +38,7 @@ function addDaySection(date, entries = []) {
         <col style="width: 15%;">
         <col style="width: 15%;">
         <col style="width: 35%;">
-        <col style="width: 10%;">  <!-- 🗑️ Trash button -->
+        <col style="width: 10%;">
       </colgroup>
       <thead>
         <tr>
@@ -68,68 +55,52 @@ function addDaySection(date, entries = []) {
       <button class="add-row-btn" data-date="${date}">Add Row</button>
     </div>
   `;
-
   container.appendChild(dayDiv);
-
-  const tbody = document.getElementById(`tbody-${date}`);
   entries.forEach(entry => addRow(date, entry));
 }
 
 function addRow(date, entry = {}) {
   const tbody = document.getElementById(`tbody-${date}`);
   const row = document.createElement('tr');
-
   row.innerHTML = `
-    <td data-label="Camera">
-      <select class="camera-select">
-        <option disabled selected>Select Camera</option>
-        ${cameras.map(cam => `<option value="${cam}">${cam}</option>`).join('')}
-        <option value="add-new-camera">➕ Add New Camera</option>
-      </select>
-    </td>
-    <td data-label="Card 1">
-      <input type="text" value="${entry.card1 || ''}" placeholder="Card 1" />
-    </td>
-    <td data-label="Card 2">
-      <input type="text" value="${entry.card2 || ''}" placeholder="Card 2" />
-    </td>
-    <td data-label="User">
-      <select class="user-select">
-        <option disabled selected>Select User</option>
-        ${users.map(user => `<option value="${user}">${user}</option>`).join('')}
-        <option value="add-new-user">➕ Add New User</option>
-      </select>
-    </td>
-    <td data-label="Action" style="text-align:center;">
-      <button class="delete-row-btn" title="Delete Row" style="
-        background: transparent;
-        border: none;
-        font-size: 18px;
-        cursor: pointer;
-        color: #d11a2a;
-      ">🗑️</button>
+    <td><select class="camera-select">
+      ${cameras.map(cam => `<option value="${cam}">${cam}</option>`).join('')}
+      <option value="add-new-camera">➕ Add New Camera</option>
+    </select></td>
+    <td><input type="text" value="${entry.card1 || ''}" placeholder="Card 1" /></td>
+    <td><input type="text" value="${entry.card2 || ''}" placeholder="Card 2" /></td>
+    <td><select class="user-select">
+      ${users.map(user => `<option value="${user}">${user}</option>`).join('')}
+      <option value="add-new-user">➕ Add New User</option>
+    </select></td>
+    <td style="text-align:center;">
+      <button class="delete-row-btn" title="Delete Row" style="background: transparent; border: none; font-size: 18px; cursor: pointer; color: #d11a2a;">🗑️</button>
     </td>
   `;
-
   tbody.appendChild(row);
 
-  // After appending, attach listeners to new selects:
   const cameraSelect = row.querySelector('.camera-select');
   const userSelect = row.querySelector('.user-select');
+  if (entry.camera && !cameras.includes(entry.camera)) {
+    const newOption = new Option(entry.camera, entry.camera, false, false);
+    cameraSelect.insertBefore(newOption, cameraSelect.querySelector('[value="add-new-camera"]'));
+  }
+  cameraSelect.value = entry.camera || '';
+
+  if (entry.user && !users.includes(entry.user)) {
+    const newOption = new Option(entry.user, entry.user, false, false);
+    userSelect.insertBefore(newOption, userSelect.querySelector('[value="add-new-user"]'));
+  }
+  userSelect.value = entry.user || '';
 
   cameraSelect.addEventListener('change', function () {
     if (this.value === 'add-new-camera') {
       const newCamera = prompt('Enter new camera name:');
       if (newCamera) {
         cameras.push(newCamera);
-        const newOption = document.createElement('option');
-        newOption.value = newCamera;
-        newOption.textContent = newCamera;
-        this.insertBefore(newOption, this.querySelector('option[value="add-new-camera"]'));
-        this.value = newCamera; // auto select new camera
-      } else {
-        this.value = ''; // reset if cancelled
-      }
+        const option = new Option(newCamera, newCamera, true, true);
+        this.insertBefore(option, this.querySelector('[value="add-new-camera"]'));
+      } else this.value = '';
     }
   });
 
@@ -138,18 +109,12 @@ function addRow(date, entry = {}) {
       const newUser = prompt('Enter new user name:');
       if (newUser) {
         users.push(newUser);
-        const newOption = document.createElement('option');
-        newOption.value = newUser;
-        newOption.textContent = newUser;
-        this.insertBefore(newOption, this.querySelector('option[value="add-new-user"]'));
-        this.value = newUser; // auto select new user
-      } else {
-        this.value = ''; // reset if cancelled
-      }
+        const option = new Option(newUser, newUser, true, true);
+        this.insertBefore(option, this.querySelector('[value="add-new-user"]'));
+      } else this.value = '';
     }
   });
 }
-
 
 // 🔥 Main
 document.addEventListener('DOMContentLoaded', async () => {
@@ -157,14 +122,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   const eventId = localStorage.getItem('eventId');
   let saveTimeout;
 
-  if (!eventId) {
-    alert('Event ID missing. Cannot load card logs.');
-    return;
-  }
+  if (!eventId) return alert('Event ID missing. Cannot load card logs.');
 
   async function saveToMongoDB() {
     const tables = document.querySelectorAll('.day-table');
-
     const cardLog = Array.from(tables).map(dayTable => {
       const date = dayTable.querySelector('h3').textContent;
       const entries = Array.from(dayTable.querySelectorAll('tbody tr')).map(row => {
@@ -188,7 +149,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function debounceSave() {
     clearTimeout(saveTimeout);
-    saveTimeout = setTimeout(saveToMongoDB, 500);
+    saveTimeout = setTimeout(saveToMongoDB, 250); // More responsive
   }
 
   function openDateModal() {
@@ -202,24 +163,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   function createNewDay() {
     const dateInput = document.getElementById('new-date-input');
     const date = dateInput.value;
-
-    if (!date) {
-      alert('Please select a date.');
-      return;
-    }
-
-    if (document.getElementById(`day-${date}`)) {
-      alert('This date already exists!');
-      return;
-    }
-
+    if (!date || document.getElementById(`day-${date}`)) return alert('Date missing or already exists');
     addDaySection(date);
     dateInput.value = '';
     closeDateModal();
     saveToMongoDB();
   }
 
-  // ✨ Button Click Handlers
   document.getElementById('add-day-btn').addEventListener('click', openDateModal);
   document.getElementById('cancel-modal').addEventListener('click', closeDateModal);
   document.getElementById('submit-date').addEventListener('click', createNewDay);
@@ -230,12 +180,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       addRow(date);
       saveToMongoDB();
     }
-
     if (e.target.classList.contains('delete-row-btn')) {
       e.target.closest('tr').remove();
       saveToMongoDB();
     }
-
     if (e.target.classList.contains('delete-day-btn')) {
       const dayDiv = e.target.closest('.day-table');
       if (dayDiv && confirm('Delete this entire day?')) {
@@ -245,11 +193,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  document.getElementById('table-container').addEventListener('change', (e) => {
-    if (e.target.matches('input, select')) {
-      debounceSave();
-    }
-  });
+  // 🔁 Save on all input/select changes
+  document.getElementById('table-container').addEventListener('input', debounceSave);
+  document.getElementById('table-container').addEventListener('change', debounceSave);
 
   await loadUsers();
   await loadCardLog();

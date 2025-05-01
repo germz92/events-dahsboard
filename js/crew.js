@@ -61,7 +61,7 @@ async function loadTable() {
 
   // ✅ Set ownership check first
   const userId = getUserIdFromToken();
-  isOwner = tableData.owner === userId;
+  isOwner = Array.isArray(tableData.owners) && tableData.owners.includes(userId);
 
   // 🔒 Then hide UI if not owner
   if (!isOwner) {

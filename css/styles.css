@@ -251,9 +251,10 @@ table select {
 @media (max-width: 768px) {
 
   html {
-    width: 100%;
+  width: 100%;
   overflow-x: hidden;
   }
+  
   body {
   padding: 5px 8px;
   }

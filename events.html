@@ -34,15 +34,19 @@
     <div id="tableList" class="table-cards"></div>
   </div>
 
-  <!-- Share Modal -->
-  <div id="shareModal" class="modal">
-    <div class="modal-content">
-      <h3>Share Event</h3>
-      <input id="shareEmail" placeholder="Enter email to share">
-      <button onclick="submitShare()">Share</button>
-      <button onclick="closeModal()">Cancel</button>
-    </div>
+<!-- Share Modal -->
+<div id="shareModal" class="modal">
+  <div class="modal-content">
+    <h3>Share Event</h3>
+    <input id="shareEmail" placeholder="Enter email to share">
+    <label style="margin: 8px 0; display: block;">
+      <input type="checkbox" id="makeOwnerCheckbox">
+      Make this user an owner
+    </label>
+    <button onclick="submitShare()">Share</button>
+    <button onclick="closeModal()">Cancel</button>
   </div>
+</div>
 
   <!-- Create Modal -->
   <div id="createModal" class="modal">

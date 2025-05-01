@@ -7,9 +7,43 @@
   <link rel="shortcut icon" type="image/x-icon" href="assets/favicon.png">
   <link rel="stylesheet" href="css/travel-accommodation.css">
   <script src="js/config.js"></script>
+  <style>
+    textarea, input[type="text"] {
+      width: 100%;
+      min-height: 34px;
+      resize: none;
+      overflow: hidden;
+      line-height: 1.4;
+      font-size: 14px;
+      padding: 6px;
+      box-sizing: border-box;
+      font-family: inherit;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    td.text {
+      max-width: 200px;
+    }
+    .edit-btn, .save-btn {
+      margin: 20px;
+      padding: 10px 16px;
+      font-size: 16px;
+      cursor: pointer;
+      border: none;
+      border-radius: 6px;
+    }
+    .edit-btn { background-color: #007BFF; color: white; }
+    .save-btn { background-color: #28a745; color: white; display: none; }
+    .readonly-span { display: inline-block; padding: 6px; white-space: pre-wrap; word-break: break-word; }
+  </style>
 </head>
 <body>
   <h1 id="eventTitle" style="text-align: center;"></h1>
+
+  <div style="text-align:center">
+    <button class="edit-btn" id="editModeBtn" onclick="enterEditMode()">Edit</button>
+    <button class="save-btn" id="saveBtn" onclick="saveData()">Save</button>
+  </div>
 
   <div class="section">
     <h2>Travel</h2>
@@ -37,8 +71,8 @@
       <table id="accommodationTable">
         <thead>
           <tr>
-            <th class="date">Date</th>
-            <th class="time">Time</th>
+            <th class="date">Check-In</th>
+            <th class="date">Check-Out</th>
             <th class="text">Hotel</th>
             <th class="text">Name</th>
             <th class="text">Ref Number</th>
@@ -57,6 +91,7 @@
     const tableId = params.get('id');
     let saveTimeout;
     let isOwner = false;
+    let editMode = false;
 
     function getUserIdFromToken() {
       if (!token) return null;
@@ -76,48 +111,69 @@
     function populateTable(tableId, rows) {
       const table = document.getElementById(tableId).querySelector("tbody");
       table.innerHTML = '';
+
       rows.forEach(item => {
         const row = document.createElement("tr");
-        row.innerHTML = `
-          <td class="date"><input type="date" value="${item.date || ''}"></td>
-          <td class="time"><input type="time" value="${item.time || ''}"></td>
-          <td class="text"><input type="text" value="${item.airline || item.hotel || ''}"></td>
-          <td class="text"><input type="text" value="${item.name || ''}"></td>
-          <td class="text"><input type="text" value="${item.ref || ''}"></td>
-          <td class="action"><button class="delete-btn" onclick="removeRow(this)">🗑️</button></td>
-        `;
+
+        if (!editMode) {
+          if (tableId === 'travelTable') {
+            row.innerHTML = `
+              <td class="date"><span class="readonly-span">${item.date || ''}</span></td>
+              <td class="time"><span class="readonly-span">${item.time || ''}</span></td>
+              <td class="text"><span class="readonly-span">${item.airline || ''}</span></td>
+              <td class="text"><span class="readonly-span">${item.name || ''}</span></td>
+              <td class="text"><span class="readonly-span">${item.ref || ''}</span></td>
+              <td class="action"></td>
+            `;
+          } else {
+            row.innerHTML = `
+              <td class="date"><span class="readonly-span">${item.checkin || ''}</span></td>
+              <td class="date"><span class="readonly-span">${item.checkout || ''}</span></td>
+              <td class="text"><span class="readonly-span">${item.hotel || ''}</span></td>
+              <td class="text"><span class="readonly-span">${item.name || ''}</span></td>
+              <td class="text"><span class="readonly-span">${item.ref || ''}</span></td>
+              <td class="action"></td>
+            `;
+          }
+        } else {
+          if (tableId === 'travelTable') {
+            row.innerHTML = `
+              <td class="date"><input type="date" value="${item.date || ''}"></td>
+              <td class="time"><input type="time" value="${item.time || ''}"></td>
+              <td class="text"><textarea>${item.airline || ''}</textarea></td>
+              <td class="text"><textarea>${item.name || ''}</textarea></td>
+              <td class="text"><textarea>${item.ref || ''}</textarea></td>
+              <td class="action"><button class="delete-btn" onclick="removeRow(this)">🗑️</button></td>
+            `;
+          } else {
+            row.innerHTML = `
+              <td class="date"><input type="date" value="${item.checkin || ''}"></td>
+              <td class="date"><input type="date" value="${item.checkout || ''}"></td>
+              <td class="text"><textarea>${item.hotel || ''}</textarea></td>
+              <td class="text"><textarea>${item.name || ''}</textarea></td>
+              <td class="text"><textarea>${item.ref || ''}</textarea></td>
+              <td class="action"><button class="delete-btn" onclick="removeRow(this)">🗑️</button></td>
+            `;
+          }
+        }
+
         table.appendChild(row);
       });
+
+      document.querySelectorAll('textarea').forEach(autoResizeTextarea);
     }
 
-    function addRow(tableId) {
-      const table = document.getElementById(tableId).querySelector("tbody");
-      const isTravel = tableId === 'travelTable';
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td class="date"><input type="date"></td>
-        <td class="time"><input type="time"></td>
-        <td class="text"><input type="text" placeholder="${isTravel ? 'Airline' : 'Hotel'}"></td>
-        <td class="text"><input type="text" placeholder="Name"></td>
-        <td class="text"><input type="text" placeholder="Ref #"></td>
-        <td class="action"><button class="delete-btn" onclick="removeRow(this)">🗑️</button></td>
-      `;
-      table.appendChild(row);
-      debounceSave();
+    function autoResizeTextarea(el) {
+      el.style.height = 'auto';
+      el.style.height = el.scrollHeight + 'px';
     }
 
-    function collectTableData(tableId) {
-      const rows = document.getElementById(tableId).querySelectorAll("tbody tr");
-      return Array.from(rows).map(row => {
-        const inputs = row.querySelectorAll('input');
-        return {
-          date: inputs[0].value,
-          time: inputs[1].value,
-          [tableId === 'travelTable' ? 'airline' : 'hotel']: inputs[2].value,
-          name: inputs[3].value,
-          ref: inputs[4].value
-        };
-      });
+    function enterEditMode() {
+      if (!isOwner) return;
+      editMode = true;
+      document.getElementById('editModeBtn').style.display = 'none';
+      document.getElementById('saveBtn').style.display = 'inline-block';
+      loadData();
     }
 
     async function saveData() {
@@ -131,58 +187,50 @@
         },
         body: JSON.stringify({ travel: travelRows, accommodation: accommodationRows })
       });
+      editMode = false;
+      document.getElementById('editModeBtn').style.display = 'inline-block';
+      document.getElementById('saveBtn').style.display = 'none';
+      loadData();
     }
 
-    function debounceSave() {
-      clearTimeout(saveTimeout);
-      saveTimeout = setTimeout(saveData, 500); // 0.5s after last change
+    function collectTableData(tableId) {
+      const rows = document.getElementById(tableId).querySelectorAll("tbody tr");
+      return Array.from(rows).map(row => {
+        const inputs = row.querySelectorAll('input, textarea');
+        return {
+          date: inputs[0]?.value || '',
+          time: inputs[1]?.value || '',
+          [tableId === 'travelTable' ? 'airline' : 'hotel']: inputs[2]?.value || '',
+          name: inputs[3]?.value || '',
+          ref: inputs[4]?.value || ''
+        };
+      });
     }
 
     function removeRow(button) {
       const row = button.closest('tr');
-      row.parentElement.removeChild(row);
-      debounceSave();
-    }
-
-    function goBack() {
-      window.location.href = `event.html?id=${tableId}`;
+      row.remove();
     }
 
     window.addEventListener("DOMContentLoaded", async () => {
-  const res = await fetch(`${API_BASE}/api/tables/${tableId}`, {
-    headers: { Authorization: token }
-  });
-
-  if (res.ok) {
-    const table = await res.json();
-    document.getElementById('eventTitle').textContent = table.title;
-
-    const userId = getUserIdFromToken();
-    isOwner = Array.isArray(table.owners) && table.owners.includes(userId);
-
-    await loadData();
-
-    if (!isOwner) {
-      // 🔒 Disable all inputs and hide delete buttons
-      document.querySelectorAll('input').forEach(input => {
-        input.disabled = true;
-        input.style.background = '#f9f9f9';
-        input.style.cursor = 'not-allowed';
+      const res = await fetch(`${API_BASE}/api/tables/${tableId}`, {
+        headers: { Authorization: token }
       });
 
-      document.querySelectorAll('.delete-btn').forEach(btn => btn.style.display = 'none');
+      if (res.ok) {
+        const table = await res.json();
+        document.getElementById('eventTitle').textContent = table.title;
 
-      // 🔒 Hide all + Row buttons
-      document.querySelectorAll('.add-btn').forEach(btn => btn.style.display = 'none');
-    } else {
-      // 🔓 Only bind save listeners if owner
-      document.getElementById('travelTable').addEventListener('input', debounceSave);
-      document.getElementById('accommodationTable').addEventListener('input', debounceSave);
-    }
-  }
-});
+        const userId = getUserIdFromToken();
+        isOwner = Array.isArray(table.owners) && table.owners.includes(userId);
 
+        if (!isOwner) {
+          document.getElementById('editModeBtn').style.display = 'none';
+        }
 
+        loadData();
+      }
+    });
   </script>
 </body>
 </html>

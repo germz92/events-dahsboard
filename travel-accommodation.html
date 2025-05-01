@@ -101,6 +101,12 @@
       return payload.id;
     }
 
+    function formatDateReadable(isoDate) {
+      if (!isoDate) return '';
+      const options = { year: 'numeric', month: 'short', day: '2-digit' };
+      return new Date(isoDate).toLocaleDateString('en-US', options);
+    }
+
     function formatTo12Hour(time) {
       if (!time) return '';
       const [hourStr, minuteStr] = time.split(':');
@@ -126,8 +132,8 @@
         if (!editMode) {
           if (tableId === 'travelTable') {
             row.innerHTML = `
-              <td class="date"><span class="readonly-span">${item.date || ''}</span></td>
-              <td class="time"><span class="readonly-span">${formatTo12Hour(item.time) || ''}</span></td>
+              <td class="date"><span class="readonly-span">${formatDateReadable(item.date)}</span></td>
+              <td class="time"><span class="readonly-span">${formatTo12Hour(item.time)}</span></td>
               <td class="text"><span class="readonly-span">${item.name || ''}</span></td>
               <td class="text"><span class="readonly-span">${item.airline || ''}</span></td>
               <td class="text"><span class="readonly-span">${item.ref || ''}</span></td>
@@ -135,8 +141,8 @@
             `;
           } else {
             row.innerHTML = `
-              <td class="date"><span class="readonly-span">${item.checkin || ''}</span></td>
-              <td class="date"><span class="readonly-span">${item.checkout || ''}</span></td>
+              <td class="date"><span class="readonly-span">${formatDateReadable(item.checkin)}</span></td>
+              <td class="date"><span class="readonly-span">${formatDateReadable(item.checkout)}</span></td>
               <td class="text"><span class="readonly-span">${item.hotel || ''}</span></td>
               <td class="text"><span class="readonly-span">${item.name || ''}</span></td>
               <td class="text"><span class="readonly-span">${item.ref || ''}</span></td>
@@ -271,7 +277,7 @@
         loadData();
       }
 
-      // Load and inject bottom nav
+      // Bottom Nav
       const navContainer = document.getElementById('bottomNavPlaceholder');
       const navRes = await fetch('bottom-nav.html');
       const navHTML = await navRes.text();
@@ -285,6 +291,7 @@
         { id: 'navCard', file: 'card-log.html' },
         { id: 'navSchedule', file: 'schedule.html' }
       ];
+
       links.forEach(({ id, file }) => {
         const el = document.getElementById(id);
         if (el) el.href = `${file}?id=${tableId}`;

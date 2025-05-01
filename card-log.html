@@ -11,6 +11,9 @@
 
 <body>
 
+  <!-- 👇 Event title placeholder -->
+  <h1 id="eventTitle" style="text-align: center; margin-top: 20px;"></h1>
+
   <h2>SD Card Log</h2>
 
   <button id="add-day-btn">Add New Day</button>
@@ -28,25 +31,40 @@
       </div>
     </div>
   </div>
+
   <script src="js/card-log.js"></script>
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const params = new URLSearchParams(window.location.search);
-    const tableId = params.get('id');
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const params = new URLSearchParams(window.location.search);
+      const tableId = params.get('id');
 
-    if (tableId) {
+      if (!tableId) {
+        alert('Event ID missing.');
+        return;
+      }
+
       localStorage.setItem('eventId', tableId);
-      document.getElementById('backButton').addEventListener('click', () => {
-        window.location.href = `event.html?id=${tableId}`;
-      });
-    } else {
-      alert('Event ID missing.');
-    }
 
-    // ✅ Now call loadCardLog() safely inside DOMContentLoaded
-    loadCardLog();
-  });
-</script>
+      // ✅ Fetch the event name
+      try {
+        const res = await fetch(`${API_BASE}/api/tables/${tableId}`, {
+          headers: { Authorization: localStorage.getItem('token') }
+        });
+
+        if (res.ok) {
+          const table = await res.json();
+          document.getElementById('eventTitle').textContent = table.title || 'Event';
+        } else {
+          document.getElementById('eventTitle').textContent = 'Event Not Found';
+        }
+      } catch (err) {
+        console.error('Failed to load event name:', err);
+        document.getElementById('eventTitle').textContent = 'Error loading event';
+      }
+
+      loadCardLog();
+    });
+  </script>
 
 </body>
 </html>

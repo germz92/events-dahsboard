@@ -89,7 +89,6 @@
     const token = localStorage.getItem('token');
     const params = new URLSearchParams(window.location.search);
     const tableId = params.get('id');
-    let saveTimeout;
     let isOwner = false;
     let editMode = false;
 
@@ -108,6 +107,16 @@
       populateTable('accommodationTable', data.accommodation);
     }
 
+    function formatTo12Hour(time) {
+      if (!time) return '';
+      const [hourStr, minuteStr] = time.split(':');
+      let hour = parseInt(hourStr, 10);
+      const minute = parseInt(minuteStr || '0', 10);
+      const ampm = hour >= 12 ? 'PM' : 'AM';
+      hour = hour % 12 || 12;
+      return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')} ${ampm}`;
+    }
+
     function populateTable(tableId, rows) {
       const table = document.getElementById(tableId).querySelector("tbody");
       table.innerHTML = '';
@@ -119,7 +128,7 @@
           if (tableId === 'travelTable') {
             row.innerHTML = `
               <td class="date"><span class="readonly-span">${item.date || ''}</span></td>
-              <td class="time"><span class="readonly-span">${item.time || ''}</span></td>
+              <td class="time"><span class="readonly-span">${formatTo12Hour(item.time) || ''}</span></td>
               <td class="text"><span class="readonly-span">${item.airline || ''}</span></td>
               <td class="text"><span class="readonly-span">${item.name || ''}</span></td>
               <td class="text"><span class="readonly-span">${item.ref || ''}</span></td>
@@ -139,7 +148,7 @@
           if (tableId === 'travelTable') {
             row.innerHTML = `
               <td class="date"><input type="date" value="${item.date || ''}"></td>
-              <td class="time"><input type="time" value="${item.time || ''}"></td>
+              <td class="time"><input type="text" placeholder="hh:mm AM/PM" value="${item.time || ''}"></td>
               <td class="text"><textarea>${item.airline || ''}</textarea></td>
               <td class="text"><textarea>${item.name || ''}</textarea></td>
               <td class="text"><textarea>${item.ref || ''}</textarea></td>
@@ -221,7 +230,7 @@
       if (tableId === 'travelTable') {
         row.innerHTML = `
           <td class="date"><input type="date" value=""></td>
-          <td class="time"><input type="time" value=""></td>
+          <td class="time"><input type="text" placeholder="hh:mm AM/PM" value=""></td>
           <td class="text"><textarea></textarea></td>
           <td class="text"><textarea></textarea></td>
           <td class="text"><textarea></textarea></td>
@@ -242,6 +251,16 @@
       row.querySelectorAll('textarea').forEach(autoResizeTextarea);
     }
 
+    // Validate AM/PM format
+    document.addEventListener('blur', function (e) {
+      if (e.target.closest('.time') && e.target.tagName === 'INPUT') {
+        const val = e.target.value.trim();
+        const match = /^(\d{1,2}):(\d{2})\s?(AM|PM)$/i.exec(val);
+        if (!match && val !== '') {
+          alert('Please enter time in hh:mm AM/PM format');
+        }
+      }
+    }, true);
 
     window.addEventListener("DOMContentLoaded", async () => {
       const res = await fetch(`${API_BASE}/api/tables/${tableId}`, {

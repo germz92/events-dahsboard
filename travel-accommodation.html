@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="css/travel-accommodation.css">
   <script src="js/config.js"></script>
   <style>
-    textarea, input[type="text"] {
+    textarea, input[type="text"], input[type="time"] {
       width: 100%;
       min-height: 34px;
       resize: none;
@@ -53,8 +53,8 @@
           <tr>
             <th class="date">Date</th>
             <th class="time">Time</th>
-            <th class="text">Airline</th>
             <th class="text">Name</th>
+            <th class="text">Airline</th>
             <th class="text">Ref Number</th>
             <th class="action"></th>
           </tr>
@@ -129,8 +129,8 @@
             row.innerHTML = `
               <td class="date"><span class="readonly-span">${item.date || ''}</span></td>
               <td class="time"><span class="readonly-span">${formatTo12Hour(item.time) || ''}</span></td>
-              <td class="text"><span class="readonly-span">${item.airline || ''}</span></td>
               <td class="text"><span class="readonly-span">${item.name || ''}</span></td>
+              <td class="text"><span class="readonly-span">${item.airline || ''}</span></td>
               <td class="text"><span class="readonly-span">${item.ref || ''}</span></td>
               <td class="action"></td>
             `;
@@ -148,9 +148,9 @@
           if (tableId === 'travelTable') {
             row.innerHTML = `
               <td class="date"><input type="date" value="${item.date || ''}"></td>
-              <td class="time"><input type="text" placeholder="hh:mm AM/PM" value="${item.time || ''}"></td>
-              <td class="text"><textarea>${item.airline || ''}</textarea></td>
+              <td class="time"><input type="time" value="${item.time || ''}"></td>
               <td class="text"><textarea>${item.name || ''}</textarea></td>
+              <td class="text"><textarea>${item.airline || ''}</textarea></td>
               <td class="text"><textarea>${item.ref || ''}</textarea></td>
               <td class="action"><button class="delete-btn" onclick="removeRow(this)">🗑️</button></td>
             `;
@@ -209,8 +209,8 @@
         return {
           date: inputs[0]?.value || '',
           time: inputs[1]?.value || '',
-          [tableId === 'travelTable' ? 'airline' : 'hotel']: inputs[2]?.value || '',
-          name: inputs[3]?.value || '',
+          name: inputs[2]?.value || '',
+          airline: inputs[3]?.value || '',
           ref: inputs[4]?.value || ''
         };
       });
@@ -230,10 +230,10 @@
       if (tableId === 'travelTable') {
         row.innerHTML = `
           <td class="date"><input type="date" value=""></td>
-          <td class="time"><input type="text" placeholder="hh:mm AM/PM" value=""></td>
-          <td class="text"><textarea></textarea></td>
-          <td class="text"><textarea></textarea></td>
-          <td class="text"><textarea></textarea></td>
+          <td class="time"><input type="time" value=""></td>
+          <td class="text"><textarea></textarea></td> <!-- name -->
+          <td class="text"><textarea></textarea></td> <!-- airline -->
+          <td class="text"><textarea></textarea></td> <!-- ref -->
           <td class="action"><button class="delete-btn" onclick="removeRow(this)">🗑️</button></td>
         `;
       } else {
@@ -250,17 +250,6 @@
       table.appendChild(row);
       row.querySelectorAll('textarea').forEach(autoResizeTextarea);
     }
-
-    // Validate AM/PM format
-    document.addEventListener('blur', function (e) {
-      if (e.target.closest('.time') && e.target.tagName === 'INPUT') {
-        const val = e.target.value.trim();
-        const match = /^(\d{1,2}):(\d{2})\s?(AM|PM)$/i.exec(val);
-        if (!match && val !== '') {
-          alert('Please enter time in hh:mm AM/PM format');
-        }
-      }
-    }, true);
 
     window.addEventListener("DOMContentLoaded", async () => {
       const res = await fetch(`${API_BASE}/api/tables/${tableId}`, {

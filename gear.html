@@ -7,6 +7,7 @@
   <link rel="shortcut icon" type="image/x-icon" href="assets/favicon.png">
   <link rel="stylesheet" href="css/gear.css">
   <script src="js/config.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body class="gear-page">
   <h2 id="eventTitle" style="margin-bottom: 2px;"></h2>
@@ -30,9 +31,58 @@
   </div>
 
   <div class="gear-container" id="gearContainer"></div>
-
   <div id="gearStatusMessage" style="margin-top:10px; color: red;"></div>
 
+  <!-- ✅ Bottom nav placeholder -->
+  <div id="bottomNavPlaceholder"></div>
+
   <script src="js/gear.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const params = new URLSearchParams(window.location.search);
+      const tableId = params.get('id');
+      localStorage.setItem('eventId', tableId);
+
+      // Load event title
+      try {
+        const res = await fetch(`${API_BASE}/api/tables/${tableId}`, {
+          headers: { Authorization: localStorage.getItem('token') }
+        });
+
+        const table = await res.json();
+        document.getElementById('eventTitle').textContent = table.title || 'Gear Checklist';
+      } catch (err) {
+        console.error('Failed to load event title:', err);
+        document.getElementById('eventTitle').textContent = 'Error loading event';
+      }
+
+      // Load and inject bottom nav
+      try {
+        const navContainer = document.getElementById('bottomNavPlaceholder');
+        const navRes = await fetch('bottom-nav.html');
+        const navHTML = await navRes.text();
+        navContainer.innerHTML = navHTML;
+
+        const links = [
+          { id: 'navGeneral', file: 'general.html' },
+          { id: 'navCrew', file: 'crew.html' },
+          { id: 'navTravel', file: 'travel-accommodation.html' },
+          { id: 'navGear', file: 'gear.html' },
+          { id: 'navCard', file: 'card-log.html' },
+          { id: 'navSchedule', file: 'schedule.html' }
+        ];
+
+        links.forEach(({ id, file }) => {
+          const el = document.getElementById(id);
+          if (el) el.href = `${file}?id=${tableId}`;
+        });
+
+        if (window.lucide) lucide.createIcons();
+      } catch (e) {
+        console.error('Failed to load bottom nav:', e);
+      }
+    });
+  </script>
 </body>
 </html>

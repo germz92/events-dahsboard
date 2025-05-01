@@ -7,11 +7,10 @@
   <link rel="shortcut icon" type="image/x-icon" href="assets/favicon.png">
   <link rel="stylesheet" href="css/card-log.css">
   <script src="js/config.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
 <body>
-
-  <!-- 👇 Event title placeholder -->
   <h1 id="eventTitle" style="text-align: center; margin-top: 20px;"></h1>
 
   <h2>SD Card Log</h2>
@@ -33,8 +32,12 @@
   </div>
 
   <script src="js/card-log.js"></script>
+
+  <!-- Bottom Nav Placeholder -->
+  <div id="bottomNavPlaceholder"></div>
+
   <script>
-    document.addEventListener('DOMContentLoaded', async () => {
+    document.addEventListener("DOMContentLoaded", async () => {
       const params = new URLSearchParams(window.location.search);
       const tableId = params.get('id');
 
@@ -45,26 +48,45 @@
 
       localStorage.setItem('eventId', tableId);
 
-      // ✅ Fetch the event name
+      // Load event name
       try {
         const res = await fetch(`${API_BASE}/api/tables/${tableId}`, {
           headers: { Authorization: localStorage.getItem('token') }
         });
 
-        if (res.ok) {
-          const table = await res.json();
-          document.getElementById('eventTitle').textContent = table.title || 'Event';
-        } else {
-          document.getElementById('eventTitle').textContent = 'Event Not Found';
-        }
+        const table = await res.json();
+        document.getElementById('eventTitle').textContent = table.title || 'Event';
       } catch (err) {
         console.error('Failed to load event name:', err);
         document.getElementById('eventTitle').textContent = 'Error loading event';
       }
 
       loadCardLog();
+
+      // Load bottom nav HTML
+      const navContainer = document.getElementById('bottomNavPlaceholder');
+      const navRes = await fetch('bottom-nav.html');
+      const navHTML = await navRes.text();
+      navContainer.innerHTML = navHTML;
+
+      // Inject hrefs with ?id=...
+      const links = [
+        { id: 'navGeneral', file: 'general.html' },
+        { id: 'navCrew', file: 'crew.html' },
+        { id: 'navTravel', file: 'travel-accommodation.html' },
+        { id: 'navGear', file: 'gear.html' },
+        { id: 'navCard', file: 'card-log.html' },
+        { id: 'navSchedule', file: 'schedule.html' } // ✅ added
+        ];
+
+
+      links.forEach(({ id, file }) => {
+        const el = document.getElementById(id);
+        if (el) el.href = `${file}?id=${tableId}`;
+      });
+
+      if (window.lucide) lucide.createIcons();
     });
   </script>
-
 </body>
 </html>

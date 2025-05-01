@@ -225,6 +225,43 @@ button {
   background: #bfbfbf;
 }
 
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: #fff;
+  border-top: 1px solid #ccc;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 1000;
+}
+
+.bottom-nav a {
+  color: #007BFF;
+  text-decoration: none;
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  padding: 6px 0;
+}
+
+.bottom-nav a:hover {
+  background-color: #f0f0f0;
+}
+
+.bottom-nav i {
+  stroke: #007BFF;
+  width: 20px;
+  height: 20px;
+  margin-bottom: 2px;
+}
+
+
 /* 🔥 Responsive fixes */
 @media (max-width: 768px) {
   body {

@@ -113,11 +113,26 @@ function renderProgramSections() {
 
     matchingPrograms.forEach(program => {
       const entry = document.createElement('div');
-      entry.className = 'program-entry';
-      entry.setAttribute('data-program-index', program.__index);
+      entry.className = 'program-entry' + (program.done ? ' done-entry' : '');
+      entry.setAttribute('data-program-index', program.__index);      
+
       entry.innerHTML = `
-        <input class="program-name" type="text" placeholder="Program Name" value="${program.name || ''}" 
-          onfocus="enableEdit(this)" onblur="autoSave(this, '${program.date}', ${program.__index}, 'name')">
+
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+          <input class="program-name" type="text" placeholder="Program Name"
+            style="flex: 1;"
+            value="${program.name || ''}" 
+            onfocus="enableEdit(this)" 
+            onblur="autoSave(this, '${program.date}', ${program.__index}, 'name')">
+
+          <label style="display: flex; align-items: center; gap: 6px; font-size: 14px;">
+            <span></span>
+            <input type="checkbox" class="done-checkbox"
+              style="width: 20px; height: 20px;"
+              ${program.done ? 'checked' : ''}
+              onchange="toggleDone(this, ${program.__index})">
+          </label>
+        </div>
 
         <div style="display: flex; align-items: center; gap: 3px;">
           <input type="time" placeholder="Start Time" style="flex: 1; min-width: 0; text-align: left;"
@@ -177,6 +192,22 @@ function renderProgramSections() {
   }, 50);
 }
 
+function toggleDone(checkbox, index) {
+  if (!isNaN(index)) {
+    tableData.programs[index].done = checkbox.checked;
+
+    const entry = checkbox.closest('.program-entry');
+    if (entry) {
+      if (checkbox.checked) {
+        entry.classList.add('done-entry');
+      } else {
+        entry.classList.remove('done-entry');
+      }
+    }
+
+    scheduleSave();
+  }
+}
 
 function matchesSearch(program) {
   if (filterDate !== 'all' && program.date !== filterDate) return false;
@@ -251,6 +282,7 @@ function captureCurrentPrograms() {
         location: entry.querySelector('textarea[placeholder="Location"]')?.value.trim() || '',
         photographer: entry.querySelector('textarea[placeholder="Photographer"]')?.value.trim() || '',
         notes: entry.querySelector('textarea[placeholder="Notes"]')?.value.trim() || '',
+        done: entry.querySelector('input.done-checkbox')?.checked || false,
       });
     });
   });

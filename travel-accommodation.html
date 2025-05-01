@@ -88,7 +88,6 @@
 
   <div id="bottomNavPlaceholder"></div>
 
-  <script src="js/travel-accommodation.js"></script>
   <script>
     const token = localStorage.getItem('token');
     const params = new URLSearchParams(window.location.search);
@@ -112,53 +111,9 @@
       return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')} ${ampm}`;
     }
 
-    function removeRow(button) {
-      const row = button.closest('tr');
-      row.remove();
-    }
-
     function autoResizeTextarea(el) {
       el.style.height = 'auto';
       el.style.height = el.scrollHeight + 'px';
-    }
-
-    function addRow(tableId) {
-      if (!editMode) return;
-
-      const table = document.getElementById(tableId).querySelector("tbody");
-      const row = document.createElement("tr");
-
-      if (tableId === 'travelTable') {
-        row.innerHTML = `
-          <td class="date"><input type="date" value=""></td>
-          <td class="time"><input type="time" value=""></td>
-          <td class="text"><textarea></textarea></td>
-          <td class="text"><textarea></textarea></td>
-          <td class="text"><textarea></textarea></td>
-          <td class="action"><button class="delete-btn" onclick="removeRow(this)">🗑️</button></td>
-        `;
-      } else {
-        row.innerHTML = `
-          <td class="date"><input type="date" value=""></td>
-          <td class="date"><input type="date" value=""></td>
-          <td class="text"><textarea></textarea></td>
-          <td class="text"><textarea></textarea></td>
-          <td class="text"><textarea></textarea></td>
-          <td class="action"><button class="delete-btn" onclick="removeRow(this)">🗑️</button></td>
-        `;
-      }
-
-      table.appendChild(row);
-      row.querySelectorAll('textarea').forEach(autoResizeTextarea);
-    }
-
-    async function loadData() {
-      const res = await fetch(`${API_BASE}/api/tables/${tableId}/travel`, {
-        headers: { Authorization: token }
-      });
-      const data = await res.json();
-      populateTable('travelTable', data.travel);
-      populateTable('accommodationTable', data.accommodation);
     }
 
     function populateTable(tableId, rows) {
@@ -213,7 +168,68 @@
         table.appendChild(row);
       });
 
-      document.querySelectorAll('textarea').forEach(autoResizeTextarea);
+      table.querySelectorAll('textarea').forEach(autoResizeTextarea);
+    }
+
+    function collectTableData(tableId) {
+      const rows = document.getElementById(tableId).querySelectorAll("tbody tr");
+      return Array.from(rows).map(row => {
+        const inputs = row.querySelectorAll('input, textarea');
+        return tableId === 'travelTable' ? {
+          date: inputs[0]?.value || '',
+          time: inputs[1]?.value || '',
+          name: inputs[2]?.value || '',
+          airline: inputs[3]?.value || '',
+          ref: inputs[4]?.value || ''
+        } : {
+          checkin: inputs[0]?.value || '',
+          checkout: inputs[1]?.value || '',
+          hotel: inputs[2]?.value || '',
+          name: inputs[3]?.value || '',
+          ref: inputs[4]?.value || ''
+        };
+      });
+    }
+
+    function addRow(tableId) {
+      if (!editMode) return;
+      const table = document.getElementById(tableId).querySelector("tbody");
+      const row = document.createElement("tr");
+
+      row.innerHTML = tableId === 'travelTable'
+        ? `
+          <td class="date"><input type="date"></td>
+          <td class="time"><input type="time"></td>
+          <td class="text"><textarea></textarea></td>
+          <td class="text"><textarea></textarea></td>
+          <td class="text"><textarea></textarea></td>
+          <td class="action"><button class="delete-btn" onclick="removeRow(this)">🗑️</button></td>
+        `
+        : `
+          <td class="date"><input type="date"></td>
+          <td class="date"><input type="date"></td>
+          <td class="text"><textarea></textarea></td>
+          <td class="text"><textarea></textarea></td>
+          <td class="text"><textarea></textarea></td>
+          <td class="action"><button class="delete-btn" onclick="removeRow(this)">🗑️</button></td>
+        `;
+
+      table.appendChild(row);
+      row.querySelectorAll('textarea').forEach(autoResizeTextarea);
+    }
+
+    function removeRow(button) {
+      const row = button.closest('tr');
+      row.remove();
+    }
+
+    async function loadData() {
+      const res = await fetch(`${API_BASE}/api/tables/${tableId}/travel`, {
+        headers: { Authorization: token }
+      });
+      const data = await res.json();
+      populateTable('travelTable', data.travel);
+      populateTable('accommodationTable', data.accommodation);
     }
 
     async function saveData() {
@@ -233,20 +249,6 @@
       loadData();
     }
 
-    function collectTableData(tableId) {
-      const rows = document.getElementById(tableId).querySelectorAll("tbody tr");
-      return Array.from(rows).map(row => {
-        const inputs = row.querySelectorAll('input, textarea');
-        return {
-          date: inputs[0]?.value || '',
-          time: inputs[1]?.value || '',
-          name: inputs[2]?.value || '',
-          airline: inputs[3]?.value || '',
-          ref: inputs[4]?.value || ''
-        };
-      });
-    }
-
     function enterEditMode() {
       if (!isOwner) return;
       editMode = true;
@@ -255,32 +257,40 @@
       loadData();
     }
 
-    // Inject bottom nav dynamically
-    document.addEventListener('DOMContentLoaded', async () => {
-      try {
-        const navContainer = document.getElementById('bottomNavPlaceholder');
-        const navRes = await fetch('bottom-nav.html');
-        const navHTML = await navRes.text();
-        navContainer.innerHTML = navHTML;
+    window.addEventListener("DOMContentLoaded", async () => {
+      const res = await fetch(`${API_BASE}/api/tables/${tableId}`, {
+        headers: { Authorization: token }
+      });
 
-        const links = [
-          { id: 'navGeneral', file: 'general.html' },
-          { id: 'navCrew', file: 'crew.html' },
-          { id: 'navTravel', file: 'travel-accommodation.html' },
-          { id: 'navGear', file: 'gear.html' },
-          { id: 'navCard', file: 'card-log.html' },
-          { id: 'navSchedule', file: 'schedule.html' }
-        ];
-
-        links.forEach(({ id, file }) => {
-          const el = document.getElementById(id);
-          if (el) el.href = `${file}?id=${tableId}`;
-        });
-
-        if (window.lucide) lucide.createIcons();
-      } catch (err) {
-        console.error('Failed to load bottom nav:', err);
+      if (res.ok) {
+        const table = await res.json();
+        document.getElementById('eventTitle').textContent = table.title;
+        const userId = getUserIdFromToken();
+        isOwner = Array.isArray(table.owners) && table.owners.includes(userId);
+        if (!isOwner) document.getElementById('editModeBtn').style.display = 'none';
+        loadData();
       }
+
+      // Load and inject bottom nav
+      const navContainer = document.getElementById('bottomNavPlaceholder');
+      const navRes = await fetch('bottom-nav.html');
+      const navHTML = await navRes.text();
+      navContainer.innerHTML = navHTML;
+
+      const links = [
+        { id: 'navGeneral', file: 'general.html' },
+        { id: 'navCrew', file: 'crew.html' },
+        { id: 'navTravel', file: 'travel-accommodation.html' },
+        { id: 'navGear', file: 'gear.html' },
+        { id: 'navCard', file: 'card-log.html' },
+        { id: 'navSchedule', file: 'schedule.html' }
+      ];
+      links.forEach(({ id, file }) => {
+        const el = document.getElementById(id);
+        if (el) el.href = `${file}?id=${tableId}`;
+      });
+
+      if (window.lucide) lucide.createIcons();
     });
   </script>
 </body>

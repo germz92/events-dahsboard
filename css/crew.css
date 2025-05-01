@@ -61,7 +61,7 @@ body {
     flex-direction: column;
     line-height: 1.2;
     margin: 0;
-    max-height: 50px;
+    max-height: 10%;
   }
   
   /* Horizontal button/input/dropdown layout */

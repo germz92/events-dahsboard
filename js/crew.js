@@ -57,13 +57,16 @@ async function loadTable() {
   const res = await fetch(`${API_BASE}/api/tables/${tableId}`, {
     headers: { Authorization: token }
   });
-  tableData = await res.json();
 
-  // ✅ Set ownership check first
+  if (!res.ok) {
+    alert('Failed to load table. You might not have access.');
+    return;
+  }
+
+  tableData = await res.json();
   const userId = getUserIdFromToken();
   isOwner = Array.isArray(tableData.owners) && tableData.owners.includes(userId);
 
-  // 🔒 Then hide UI if not owner
   if (!isOwner) {
     const addDateBtn = document.getElementById('addDateBtn');
     if (addDateBtn) addDateBtn.style.display = 'none';
@@ -77,7 +80,6 @@ async function loadTable() {
   renderTableSection();
   updateCrewCount();
 }
-
 
 
 async function preloadUsers() {
@@ -117,6 +119,7 @@ function renderTableSection() {
 
   const visibleNames = new Set();
 
+  
   dates.forEach(date => {
     const sectionBox = document.createElement('div');
     sectionBox.className = 'date-section';
@@ -188,7 +191,28 @@ function renderTableSection() {
       const tr = document.createElement('tr');
       tr.id = prefix;
       tr.setAttribute('data-id', rowId);
-
+    
+      if (isOwner) {
+        tr.setAttribute('draggable', 'true');
+    
+        tr.addEventListener('dragstart', (e) => {
+          e.dataTransfer.setData('text/plain', rowId);
+          tr.classList.add('dragging');
+        });
+    
+        tr.addEventListener('dragend', () => {
+          tr.classList.remove('dragging');
+        });
+    
+        tr.addEventListener('dragover', (e) => e.preventDefault());
+    
+        tr.addEventListener('drop', (e) => {
+          e.preventDefault();
+          const draggedId = e.dataTransfer.getData('text/plain');
+          handleDrop(rowId, draggedId);
+        });
+      }
+    
       tr.innerHTML = `
         <td><span id="${prefix}-name">${row.name}</span></td>
         <td><span id="${prefix}-startTime">${formatTime(row.startTime)}</span></td>
@@ -204,13 +228,14 @@ function renderTableSection() {
           ` : ''}
         </td>
       `;
-
+    
       tbody.appendChild(tr);
-
+    
       if (row.name && row.name.trim()) {
         visibleNames.add(row.name.trim());
       }
     });
+    
 
     if (isOwner) {
       const actionRow = document.createElement('tr');
@@ -238,114 +263,45 @@ function renderTableSection() {
   }
 }
 
-function toggleEditById(rowId) {
-  if (!isOwner) return;
-
-  const prefix = `row-${rowId}`;
-  const row = tableData.rows.find(r => r._id === rowId);
-  if (!row) return alert('Row not found.');
-
-  // 🔁 Replace text spans with editable fields
-  const nameSelectHTML = `
-    <select id="${prefix}-name">
-      <option value="">-- Select Name --</option>
-      ${cachedUsers.map(u => `<option value="${u}" ${u === row.name ? 'selected' : ''}>${u}</option>`).join('')}
-      <option value="__add_new__">➕ Add new name</option>
-    </select>
-  `;
-  document.getElementById(`${prefix}-name`).outerHTML = nameSelectHTML;
-
-  const roleSelectHTML = `
-    <select id="${prefix}-role">
-      <option value="">-- Select Role --</option>
-      ${cachedRoles.map(r => `<option value="${r}" ${r === row.role ? 'selected' : ''}>${r}</option>`).join('')}
-      <option value="__add_new__">➕ Add new role</option>
-    </select>
-  `;
-  document.getElementById(`${prefix}-role`).outerHTML = roleSelectHTML;
-
-  document.getElementById(`${prefix}-startTime`).outerHTML =
-    `<input type="time" id="${prefix}-startTime" value="${row.startTime}">`;
-
-  document.getElementById(`${prefix}-endTime`).outerHTML =
-    `<input type="time" id="${prefix}-endTime" value="${row.endTime}">`;
-
-  document.getElementById(`${prefix}-notes`).outerHTML =
-    `<input type="text" id="${prefix}-notes" value="${row.notes}">`;
-
-  // 🔁 Live total hours update
-  const totalHoursEl = document.getElementById(`${prefix}-totalHours`);
-  const updateHours = () => {
-    const start = document.getElementById(`${prefix}-startTime`).value;
-    const end = document.getElementById(`${prefix}-endTime`).value;
-    totalHoursEl.textContent = calculateHours(start, end);
-  };
-  document.getElementById(`${prefix}-startTime`).addEventListener('input', updateHours);
-  document.getElementById(`${prefix}-endTime`).addEventListener('input', updateHours);
-
-  // 🔁 Handle "add new name/role" in dropdowns
-  setTimeout(() => {
-    const nameSelect = document.getElementById(`${prefix}-name`);
-    nameSelect.addEventListener('change', () => {
-      if (nameSelect.value === '__add_new__') {
-        const newName = prompt('Enter new name:');
-        if (newName && !cachedUsers.includes(newName)) {
-          cachedUsers.push(newName);
-          cachedUsers.sort();
-          nameSelect.innerHTML = `
-            <option value="">-- Select Name --</option>
-            ${cachedUsers.map(u => `<option value="${u}">${u}</option>`).join('')}
-            <option value="__add_new__">➕ Add new name</option>
-          `;
-          nameSelect.value = newName;
-        } else {
-          nameSelect.value = row.name || '';
-        }
-      }
-    });
-
-    const roleSelect = document.getElementById(`${prefix}-role`);
-    roleSelect.addEventListener('change', () => {
-      if (roleSelect.value === '__add_new__') {
-        const newRole = prompt('Enter new role:');
-        if (newRole && !cachedRoles.includes(newRole)) {
-          cachedRoles.push(newRole);
-          cachedRoles.sort();
-          roleSelect.innerHTML = `
-            <option value="">-- Select Role --</option>
-            ${cachedRoles.map(r => `<option value="${r}">${r}</option>`).join('')}
-            <option value="__add_new__">➕ Add new role</option>
-          `;
-          roleSelect.value = newRole;
-        } else {
-          roleSelect.value = row.role || '';
-        }
-      }
-    });
-  }, 0);
-
-  // 🔁 Toggle buttons
-  const actionCell = document.getElementById(prefix).querySelector('td:last-child');
-  const [editBtn, saveBtn] = actionCell.querySelectorAll('button');
-  editBtn.style.display = 'none';
-  saveBtn.style.display = '';
-}
 
 
 async function saveEditById(rowId) {
   if (!isOwner) return;
-  const prefix = `row-${rowId}`;
 
-  const startTime = document.getElementById(`${prefix}-startTime`).value;
-  const endTime = document.getElementById(`${prefix}-endTime`).value;
+  const prefix = `row-${rowId}`;
+  const row = tableData.rows.find(r => r._id === rowId);
+  if (!row) return;
+
+  const nameInput = document.getElementById(`${prefix}-name`);
+  const startInput = document.getElementById(`${prefix}-startTime`);
+  const endInput = document.getElementById(`${prefix}-endTime`);
+  const roleInput = document.getElementById(`${prefix}-role`);
+  const notesInput = document.getElementById(`${prefix}-notes`);
+
+  if (!nameInput || !startInput || !endInput || !roleInput || !notesInput) {
+    alert('Some editable fields are missing in the DOM.');
+    console.error('Missing fields:', {
+      nameInput,
+      startInput,
+      endInput,
+      roleInput,
+      notesInput
+    });
+    return;
+  }
+
+  const startTime = startInput.value;
+  const endTime = endInput.value;
 
   const updatedRow = {
-    name: document.getElementById(`${prefix}-name`).value,
+    _id: rowId,
+    date: row.date,
+    name: nameInput.value,
     startTime,
     endTime,
     totalHours: calculateHours(startTime, endTime),
-    role: document.getElementById(`${prefix}-role`).value,
-    notes: document.getElementById(`${prefix}-notes`).value
+    role: roleInput.value,
+    notes: notesInput.value
   };
 
   const res = await fetch(`${API_BASE}/api/tables/${tableId}/rows/${rowId}`, {
@@ -360,7 +316,93 @@ async function saveEditById(rowId) {
   if (res.ok) {
     await loadTable();
   } else {
+    const errorText = await res.text();
     alert('Failed to save row.');
+    console.error('Save failed:', errorText);
+  }
+}
+
+
+
+function toggleEditById(rowId) {
+  if (!isOwner) return;
+
+  const row = tableData.rows.find(r => r._id === rowId);
+  if (!row) return alert('Row not found.');
+
+  const prefix = `row-${rowId}`;
+  const tr = document.getElementById(prefix);
+  if (!tr) return;
+
+  tr.querySelector(`#${prefix}-name`).outerHTML = `
+    <select id="${prefix}-name">
+      <option value="">-- Select Name --</option>
+      ${cachedUsers.map(u => `<option value="${u}" ${u === row.name ? 'selected' : ''}>${u}</option>`).join('')}
+      <option value="__add_new__">➕ Add new name</option>
+    </select>
+  `;
+
+  tr.querySelector(`#${prefix}-role`).outerHTML = `
+    <select id="${prefix}-role">
+      <option value="">-- Select Role --</option>
+      ${cachedRoles.map(r => `<option value="${r}" ${r === row.role ? 'selected' : ''}>${r}</option>`).join('')}
+      <option value="__add_new__">➕ Add new role</option>
+    </select>
+  `;
+
+  tr.querySelector(`#${prefix}-startTime`).outerHTML = `<input type="time" id="${prefix}-startTime" value="${row.startTime}">`;
+  tr.querySelector(`#${prefix}-endTime`).outerHTML = `<input type="time" id="${prefix}-endTime" value="${row.endTime}">`;
+  tr.querySelector(`#${prefix}-notes`).outerHTML = `<input type="text" id="${prefix}-notes" value="${row.notes}">`;
+
+  const totalHoursEl = document.getElementById(`${prefix}-totalHours`);
+  const updateHours = () => {
+    const start = document.getElementById(`${prefix}-startTime`).value;
+    const end = document.getElementById(`${prefix}-endTime`).value;
+    totalHoursEl.textContent = calculateHours(start, end);
+  };
+  document.getElementById(`${prefix}-startTime`).addEventListener('input', updateHours);
+  document.getElementById(`${prefix}-endTime`).addEventListener('input', updateHours);
+
+  setTimeout(() => {
+    const nameSelect = document.getElementById(`${prefix}-name`);
+    nameSelect.addEventListener('change', () => {
+      if (nameSelect.value === '__add_new__') {
+        const newName = prompt('Enter new name:');
+        if (newName && !cachedUsers.includes(newName)) {
+          cachedUsers.push(newName);
+          cachedUsers.sort();
+        }
+        nameSelect.innerHTML = `
+          <option value="">-- Select Name --</option>
+          ${cachedUsers.map(u => `<option value="${u}" ${u === newName ? 'selected' : ''}>${u}</option>`).join('')}
+          <option value="__add_new__">➕ Add new name</option>
+        `;
+        nameSelect.value = newName;
+      }
+    });
+
+    const roleSelect = document.getElementById(`${prefix}-role`);
+    roleSelect.addEventListener('change', () => {
+      if (roleSelect.value === '__add_new__') {
+        const newRole = prompt('Enter new role:');
+        if (newRole && !cachedRoles.includes(newRole)) {
+          cachedRoles.push(newRole);
+          cachedRoles.sort();
+        }
+        roleSelect.innerHTML = `
+          <option value="">-- Select Role --</option>
+          ${cachedRoles.map(r => `<option value="${r}" ${r === newRole ? 'selected' : ''}>${r}</option>`).join('')}
+          <option value="__add_new__">➕ Add new role</option>
+        `;
+        roleSelect.value = newRole;
+      }
+    });
+  }, 0);
+
+  const buttons = tr.querySelectorAll('td:last-child button');
+  if (buttons.length >= 2) {
+    buttons[0].style.display = 'none';
+    buttons[1].style.display = '';
   }
 }
 
@@ -565,6 +607,38 @@ function updateCrewCount() {
 
 function clearDateFilter() {
   document.getElementById('filterDate').value = '';
+  renderTableSection();
+}
+
+async function saveRowOrder() {
+  await fetch(`${API_BASE}/api/tables/${tableId}/reorder-rows`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: token
+    },
+    body: JSON.stringify({ rows: tableData.rows })
+  });
+}
+
+function handleDrop(targetId, draggedId) {
+  if (targetId === draggedId) return;
+
+  const rows = tableData.rows;
+  const draggedIndex = rows.findIndex(r => r._id === draggedId);
+  const targetIndex = rows.findIndex(r => r._id === targetId);
+
+  if (draggedIndex === -1 || targetIndex === -1) return;
+
+  if (rows[draggedIndex].date !== rows[targetIndex].date) {
+    alert("You can only reorder within the same day.");
+    return;
+  }
+
+  const [movedRow] = rows.splice(draggedIndex, 1);
+  rows.splice(targetIndex, 0, movedRow);
+
+  saveRowOrder();
   renderTableSection();
 }
 

@@ -1,7 +1,8 @@
 html, body {
   font-family: Arial, sans-serif;
   background: #f4f4f4;
-
+  margin: 0;
+  padding: 0 5%;
   max-width: 100%;
   overflow-x: hidden;
   min-height: 100vh;
@@ -49,33 +50,42 @@ h2 {
   margin-bottom: 6px;
 }
 
-/* Inputs look like plain text until clicked */
-.info-section input,
-.contacts-container input {
-  padding: 6px 8px;
+/* Inputs and textareas */
+textarea,
+input[type="text"],
+input[type="date"] {
   width: 100%;
   font-size: 16px;
+  padding: 6px 8px;
   font-family: inherit;
-  color: black;
-  background: transparent;
-  border: none;
-  border-radius: 6px;
   box-sizing: border-box;
-  cursor: text;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  resize: none;
+  background: #fff;
+  color: #333;
+  min-height: 36px;
+  line-height: 1.4;
 }
 
-/* Inputs when focused (clicked) */
-.info-section input:focus,
-.contacts-container input:focus {
+input[type="date"] {
+  background: transparent;
+  border: none;
+}
+
+input[type="date"]:focus,
+textarea:focus,
+input[type="text"]:focus {
   border: 1px solid #3f51b5;
   background: #ffffff;
   outline: none;
 }
 
+/* Contacts container and table styling */
 .contacts-container {
-  max-width: 800px;
+  max-width: 1000px;
   margin: auto;
-  padding: 20px;
+  padding: 8px;
   border: 1px solid #ccc;
   border-radius: 8px;
   background: #f0f0f0;
@@ -100,8 +110,47 @@ h2 {
 }
 
 .contacts-container td {
-  padding: 2px 4px;
+  padding: 6px 8px;
   background: #f9f9f9;
+  vertical-align: top;
+}
+
+/* View mode elements */
+.contacts-container td > a,
+.contacts-container td > div,
+.contacts-container td > span {
+  display: block;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.4;
+  padding: 6px 4px;
+  font-size: 15px;
+  color: #333;
+  text-decoration: none;
+}
+
+/* Edit mode inputs inside table */
+.contacts-container td textarea,
+.contacts-container td input[type="text"] {
+  width: 100%;
+  font-size: 15px;
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #fff;
+  resize: none;
+  min-height: 36px;
+  box-sizing: border-box;
+  line-height: 1.4;
+}
+
+/* Edit mode focus */
+.contacts-container td textarea:focus,
+.contacts-container td input[type="text"]:focus {
+  border-color: #3f51b5;
+  outline: none;
+  background: #fff;
 }
 
 .contacts-container button.delete-btn {
@@ -116,17 +165,9 @@ h2 {
   color: #d32f2f;
 }
 
-.contacts-header,
-.contact-row {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr) 60px;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
 .add-row-btn {
-  margin-top: 15px;
-  padding: 10px 16px;
+  margin-top: 10px;
+  padding: 6x 10x;
   background-color: #3f51b5;
   color: white;
   border: none;
@@ -156,7 +197,7 @@ button {
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  margin: 20px 0;
+  margin: 4px 0;
 }
 
 .back-btn {
@@ -166,13 +207,12 @@ button {
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
+  border-radius: 6px;
 }
 
-.back-button:hover {
-  background: #f0f0f0;
-  border-color: #999;
+.back-btn:hover {
+  background: #bfbfbf;
 }
-
 
 /* 🔥 Responsive fixes */
 @media (max-width: 768px) {
@@ -186,7 +226,6 @@ button {
   }
 
   th, td {
-
     font-size: 16px;
   }
 
@@ -194,7 +233,7 @@ button {
     font-size: 16px;
   }
 
-  .back-button {
+  .back-btn {
     padding: 8px 12px;
     font-size: 16px;
   }
@@ -208,7 +247,7 @@ button {
     width: 95%;
   }
 
-  select, input[type="text"] {
+  select, textarea, input[type="date"] {
     font-size: 16px;
   }
 }

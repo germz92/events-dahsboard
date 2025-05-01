@@ -2,130 +2,264 @@ const token = localStorage.getItem('token');
 const params = new URLSearchParams(window.location.search);
 const tableId = params.get('id');
 
-if (!tableId) {
-  alert('Missing table ID. Returning to events page...');
-  window.location.href = 'event.html';
-}
+document.addEventListener('DOMContentLoaded', async () => {
+  if (tableId && token) {
+    const res = await fetch(`${API_BASE}/api/tables/${tableId}`, {
+      headers: { Authorization: token }
+    });
 
-function addContactRow(contact = {}, isReadOnly = false) {
-  const container = document.getElementById('contactRows');
-  const row = document.createElement('tr');
+    if (res.ok) {
+      const table = await res.json();
+      const general = table.general || {};
 
-  if (isReadOnly) {
-    row.innerHTML = `
-      <td>${contact.name || ''}</td>
-      <td>
-        ${contact.number
-          ? `<a href="tel:${contact.number}">${contact.number}</a>`
-          : ''}
-      </td>
-      <td>
-        ${contact.email
-          ? `<a href="mailto:${contact.email}">${contact.email}</a>`
-          : ''}
-      </td>
-      <td>${contact.role || ''}</td>
-      <td><button type="button" class="delete-btn" onclick="this.closest('tr').remove()">🗑</button></td>
-    `;
+      document.getElementById('eventTitle').textContent = table.title;
+
+      ['location', 'weather', 'attendees', 'budget'].forEach(id => {
+        const el = document.getElementById(id);
+        const div = document.createElement('div');
+        div.id = id;
+        div.textContent = general[id] || '';
+        div.dataset.value = general[id] || '';
+        div.className = 'read-only';
+        el.replaceWith(div);
+      });
+
+      document.getElementById('start').value = general.start || '';
+      document.getElementById('end').value = general.end || '';
+
+      (general.contacts || []).forEach(data => renderContactRow(data, true));
+      (general.locations || []).forEach(data => renderLocationRow(data, true));
+
+      document.getElementById('editBtn').style.display = 'inline-block';
+    }
   }
-   else {
-    row.innerHTML = `
-      <td><textarea name="contactName" placeholder="Name">${contact.name || ''}</textarea></td>
-      <td><textarea name="contactNumber" placeholder="Number">${contact.number || ''}</textarea></td>
-      <td><textarea name="contactEmail" placeholder="E-Mail Address">${contact.email || ''}</textarea></td>
-      <td><textarea name="contactRole" placeholder="Role">${contact.role || ''}</textarea></td>
-      <td><button type="button" class="delete-btn" onclick="this.closest('tr').remove()">🗑</button></td>
-    `;
-  }
+});
 
-  container.appendChild(row);
-}
+function createLinkedTextarea(value, type) {
+  const textarea = document.createElement('textarea');
+  textarea.value = value || '';
+  textarea.placeholder = type.charAt(0).toUpperCase() + type.slice(1);
+  textarea.addEventListener('input', () => autoResizeTextarea(textarea));
+  autoResizeTextarea(textarea);
 
-
-
-function formatDateInput(isoStr) {
-  if (!isoStr) return '';
-  const date = new Date(isoStr);
-  const offset = date.getTimezoneOffset();
-  date.setMinutes(date.getMinutes() - offset); // neutralize timezone offset
-  return date.toISOString().split('T')[0]; // return YYYY-MM-DD
-}
-
-async function loadGeneralInfo() {
-  const res = await fetch(`${API_BASE}/api/tables/${tableId}/general`, {
-    headers: { Authorization: token }
+  textarea.addEventListener('dblclick', () => {
+    const val = textarea.value.trim();
+    if (!val) return;
+    if (type === 'email') window.location.href = `mailto:${val}`;
+    else if (type === 'phone') window.location.href = `tel:${val}`;
+    else if (type === 'address') window.open(`https://www.google.com/maps/search/?q=${encodeURIComponent(val)}`, '_blank');
   });
-  const data = await res.json();
 
-  const form = document.getElementById('generalForm');
-  form.location.value = data.location || '';
-  form.weather.value = data.weather || '';
-  form.start.value = formatDateInput(data.start);
-  form.end.value = formatDateInput(data.end);
-  form.attendees.value = data.attendees || '';
-  form.budget.value = data.budget || '';
-
-  (data.contacts || []).forEach(contact => addContactRow(contact, true));
+  return textarea;
 }
 
+function createLinkHTML(value, type) {
+  if (!value) return '<div>(empty)</div>';
+  value = value.trim();
+  let href = '#';
+  if (type === 'email') href = `mailto:${value}`;
+  else if (type === 'phone') href = `tel:${value}`;
+  else if (type === 'address') href = `https://www.google.com/maps/search/?q=${encodeURIComponent(value)}`;
+  else return `<div>${value}</div>`;
+  return `<div><a href="${href}" target="_blank">${value}</a></div>`;
+}
+
+function createTd(child) {
+  const td = document.createElement('td');
+  td.appendChild(child);
+  return td;
+}
+
+function deleteButton() {
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.textContent = '❌';
+  btn.onclick = e => e.target.closest('tr').remove();
+  return btn;
+}
+
+function renderContactRow(data = {}, readOnly = false) {
+  const tbody = document.getElementById('contactRows');
+  const row = document.createElement('tr');
+  const fields = [
+    { value: data.name, type: 'text' },
+    { value: data.number, type: 'phone' },
+    { value: data.email, type: 'email' },
+    { value: data.role, type: 'text' }
+  ];
+
+  fields.forEach(({ value, type }) => {
+    const td = document.createElement('td');
+    td.innerHTML = readOnly ? createLinkHTML(value, type) : '';
+    if (!readOnly) td.appendChild(createLinkedTextarea(value, type));
+    row.appendChild(td);
+  });
+
+  const deleteTd = document.createElement('td');
+  if (!readOnly) deleteTd.appendChild(deleteButton());
+  row.appendChild(deleteTd);
+  tbody.appendChild(row);
+}
+
+function renderLocationRow(data = {}, readOnly = false) {
+  const tbody = document.getElementById('locationsRows');
+  const row = document.createElement('tr');
+  const fields = [
+    { value: data.name, type: 'text' },
+    { value: data.address, type: 'address' },
+    { value: data.event, type: 'text' }
+  ];
+
+  fields.forEach(({ value, type }) => {
+    const td = document.createElement('td');
+    td.innerHTML = readOnly ? createLinkHTML(value, type) : '';
+    if (!readOnly) td.appendChild(createLinkedTextarea(value, type));
+    row.appendChild(td);
+  });
+
+  const deleteTd = document.createElement('td');
+  if (!readOnly) deleteTd.appendChild(deleteButton());
+  row.appendChild(deleteTd);
+  tbody.appendChild(row);
+}
+
+function collectContacts() {
+  return Array.from(document.querySelectorAll("#contactRows tr")).map(row => {
+    const inputs = row.querySelectorAll("textarea");
+    return {
+      name: inputs[0].value.trim(),
+      number: inputs[1].value.trim(),
+      email: inputs[2].value.trim(),
+      role: inputs[3].value.trim()
+    };
+  });
+}
+
+function collectLocations() {
+  return Array.from(document.querySelectorAll("#locationsRows tr")).map(row => {
+    const inputs = row.querySelectorAll("textarea");
+    return {
+      name: inputs[0].value.trim(),
+      address: inputs[1].value.trim(),
+      event: inputs[2].value.trim()
+    };
+  });
+}
 
 async function saveGeneralInfo() {
-  const form = document.getElementById('generalForm');
-  const container = document.getElementById('contactRows');
-  const allRows = container.querySelectorAll('tr');
+  console.log("Saving general info...");
 
-  const contacts = Array.from(allRows).map(row => {
-    const fields = row.querySelectorAll('input, textarea');
-    if (fields.length) {
-      return {
-        name: fields[0].value,
-        number: fields[1].value,
-        email: fields[2].value,
-        role: fields[3].value
-      };
-    } else {
-      const cells = row.querySelectorAll('td');
-      return {
-        name: cells[0]?.textContent.trim(),
-        number: cells[1]?.textContent.trim(),
-        email: cells[2]?.textContent.trim(),
-        role: cells[3]?.textContent.trim()
-      };
-    }
-      
-  });
+  function getTextValue(id) {
+    const el = document.getElementById(id);
+    if (!el) return '';
+    return el.tagName.toLowerCase() === 'textarea' ? el.value.trim() : el.textContent.trim();
+  }
 
-  // 👇 Append T12:00:00 to avoid timezone offset shifting
-  const start = form.start.value ? `${form.start.value}T12:00:00` : '';
-  const end = form.end.value ? `${form.end.value}T12:00:00` : '';
+  const location = getTextValue('location');
+  const weather = getTextValue('weather');
+  const attendees = getTextValue('attendees');
+  const budget = getTextValue('budget');
+  const start = document.getElementById('start')?.value || '';
+  const end = document.getElementById('end')?.value || '';
+  const contacts = collectContacts();
+  const locations = collectLocations();
 
-  const general = {
-    location: form.location.value,
-    weather: form.weather.value,
+  const generalData = {
+    location,
+    weather,
     start,
     end,
-    attendees: parseInt(form.attendees.value) || 0,
-    budget: form.budget.value,
-    contacts
+    attendees,
+    budget,
+    contacts,
+    locations
   };
 
-  await fetch(`${API_BASE}/api/tables/${tableId}/general`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: token
-    },
-    body: JSON.stringify(general)
+  console.log("Data being saved:", generalData);
+
+  try {
+    const res = await fetch(`${API_BASE}/api/tables/${tableId}/general`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: token
+      },
+      body: JSON.stringify(generalData)
+    });
+
+    const responseText = await res.text();
+    console.log("Response from backend:", responseText);
+
+    if (!res.ok) {
+      throw new Error(`Failed to save: ${res.status} ${responseText}`);
+    }
+
+    alert("Saved successfully!");
+    window.location.reload();
+  } catch (err) {
+    console.error("Failed to save general info:", err);
+    alert("Error saving general info.");
+  }
+}
+
+
+
+function autoResizeTextarea(el) {
+  el.style.height = 'auto';
+  el.style.height = el.scrollHeight + 'px';
+}
+
+document.addEventListener('input', function (e) {
+  if (e.target.tagName.toLowerCase() === 'textarea') {
+    autoResizeTextarea(e.target);
+  }
+});
+
+function collectReadOnlyData(selector, count) {
+  return Array.from(document.querySelectorAll(`${selector} tr`)).map(row => {
+    const tds = Array.from(row.querySelectorAll('td')).slice(0, count);
+    return tds.map(td => td.innerText.trim()).reduce((acc, val, i) => {
+      const keys = count === 4 ? ['name', 'number', 'email', 'role'] : ['name', 'address', 'event'];
+      acc[keys[i]] = val;
+      return acc;
+    }, {});
+  });
+}
+
+function switchToEdit() {
+  ['location', 'weather', 'attendees', 'budget'].forEach(id => {
+    const div = document.getElementById(id);
+    const textarea = document.createElement('textarea');
+    textarea.id = id;
+    textarea.value = div.dataset.value || div.textContent || '';
+    textarea.className = '';
+    div.replaceWith(textarea);
+    autoResizeTextarea(textarea);
   });
 
-  alert('General information saved!');
+  const contactData = collectReadOnlyData('#contactRows', 4);
+  document.getElementById('contactRows').innerHTML = '';
+  contactData.forEach(data => renderContactRow(data, false));
+
+  const locationData = collectReadOnlyData('#locationsRows', 3);
+  document.getElementById('locationsRows').innerHTML = '';
+  locationData.forEach(data => renderLocationRow(data, false));
+
+  document.querySelectorAll('.add-row-btn').forEach(btn => btn.style.display = 'inline-block');
+  document.getElementById('editBtn').style.display = 'none';
 }
 
-
-loadGeneralInfo();
-
-function goBack() {
-  const params = new URLSearchParams(window.location.search);
-  const tableId = params.get('id');
-  window.location.href = `event.html?id=${tableId}`;
+function addContactRow() {
+  if (document.getElementById('editBtn')?.style.display !== 'none') {
+    switchToEdit();
+  }
+  renderContactRow({}, false);
 }
+
+function addLocationRow() {
+  if (document.getElementById('editBtn')?.style.display !== 'none') {
+    switchToEdit();
+  }
+  renderLocationRow({}, false);
+}
+

@@ -7,11 +7,9 @@
   <link rel="shortcut icon" type="image/x-icon" href="assets/favicon.png">
   <link rel="stylesheet" href="css/general.css" />
   <script src="js/config.js"></script>
-
-  
 </head>
 <body>
-    <button onclick="goBack()" class="back-btn">⬅ Back</button>
+  <button onclick="goBack()" class="back-btn">⬅ Back</button>
 
   <div class="container">
     <h2 id="eventTitle" style="text-align: center; margin-bottom: 20px;"></h2>
@@ -20,11 +18,11 @@
       <div class="info-section">
         <div>
           <label for="location">Location</label>
-          <input type="text" id="location" name="location" />
+          <div id="location" class="read-only"></div>
         </div>
         <div>
           <label for="weather">Weather</label>
-          <input type="text" id="weather" name="weather" />
+          <div id="weather" class="read-only"></div>
         </div>
         <div>
           <label for="start">Start Date</label>
@@ -36,11 +34,11 @@
         </div>
         <div>
           <label for="attendees">Attendee Count</label>
-          <input type="text" id="attendees" name="attendees" />
+          <div id="attendees" class="read-only"></div>
         </div>
         <div>
           <label for="budget">Budget</label>
-          <input type="text" id="budget" name="budget" />
+          <div id="budget" class="read-only"></div>
         </div>
       </div>      
 
@@ -65,28 +63,34 @@
         <button type="button" class="add-row-btn" onclick="addContactRow()">Add Row</button>
       </div>
 
+      <div class="contacts-container">
+        <h2 style="margin-top: 40px;">Locations</h2>
+        <div class="contacts-scroll-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Address</th>
+                <th>Event</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="locationsRows">
+              <!-- Rows will be injected by JS -->
+            </tbody>
+          </table>
+        </div>
+        <button type="button" class="add-row-btn" onclick="addLocationRow()">Add Row</button>
+      </div>      
+
       <div class="save-button-container">
         <button type="button" class="add-row-btn" onclick="saveGeneralInfo()">Save</button>
+        <button id="editBtn" type="button" class="add-row-btn" onclick="switchToEdit()" style="display: none;">Edit</button>
       </div>
     </form>
   </div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', async () => {
-      const params = new URLSearchParams(window.location.search);
-      const tableId = params.get('id');
-      const token = localStorage.getItem('token');
-      if (tableId && token) {
-        const res = await fetch(`${API_BASE}/api/tables/${tableId}`, {
-          headers: { Authorization: token }
-        });
-        if (res.ok) {
-          const table = await res.json();
-          document.getElementById('eventTitle').textContent = table.title;
-        }
-      }
-    });
-
     function goBack() {
       const params = new URLSearchParams(window.location.search);
       const tableId = params.get('id');

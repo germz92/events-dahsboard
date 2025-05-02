@@ -5,6 +5,7 @@ html, body {
   background: #f5f7fa;
   color: #333;
   overflow-x: hidden;
+  margin-bottom: 500px;
 }
 
 .section {

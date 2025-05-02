@@ -6,6 +6,11 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  margin-bottom: 500px;
+}
+
+html {
+  margin-bottom: 500px;
 }
 
 .back-btn {

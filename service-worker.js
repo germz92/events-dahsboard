@@ -1,10 +1,6 @@
-const CACHE_NAME = "event-dashboard-cache-v2";
+const CACHE_NAME = "event-dashboard-cache-v3";
 const urlsToCache = [
   "/",
-  "/index.html",
-  "/css/styles.css",
-  "/js/config.js",
-  "/js/login.js",
   "/assets/logo.png"
 ];
 

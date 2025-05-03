@@ -1,5 +1,3 @@
-const API_BASE = 'https://events-dashboard-backend.onrender.com';
-
 (async function checkLogin() {
   const pathname = window.location.pathname.toLowerCase();
   const isLoginPage =
@@ -25,10 +23,15 @@ const API_BASE = 'https://events-dashboard-backend.onrender.com';
       headers: { Authorization: token }
     });
 
+    const responseText = await res.text(); // <-- Log server's response body
+    console.log('[config.js] verify-token status:', res.status);
+    console.log('[config.js] verify-token response:', responseText);
+
     if (!res.ok) {
       console.warn('[config.js] Invalid token. Logging out...');
       localStorage.removeItem('token');
       localStorage.removeItem('fullName');
+      localStorage.removeItem('userId');
       window.location.href = 'index.html';
     }
   } catch (err) {

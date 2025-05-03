@@ -6,6 +6,7 @@
   <title>Events</title>
   <link rel="shortcut icon" type="image/x-icon" href="assets/favicon.png">
   <link rel="stylesheet" href="css/events.css">
+  <script src="js/api.js"></script> 
   <script src="js/config.js"></script>
 </head>
 <body>
@@ -15,7 +16,7 @@
   <div class="card-container">
     <div class="top-bar">
       <h2 id="usernameDisplay">Welcome</h2>
-      <button class=“logout-btn” onclick="logout()">Logout</button>
+    <button class="logout-btn" onclick="logout()">Logout</button>
     </div>
 
     <div class="events-header">
@@ -59,6 +60,7 @@
       <button onclick="hideCreateModal()">Cancel</button>
     </div>
   </div>
+  <script>console.log('✅ events.html loaded');</script>
   <script src="js/events.js"></script>
 </body>
 </html>

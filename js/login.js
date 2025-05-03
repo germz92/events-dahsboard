@@ -40,7 +40,7 @@ window.login = async function () {
       // optional: extract and store user ID
       const payload = JSON.parse(atob(data.token.split('.')[1]));
       if (payload?.id) localStorage.setItem('userId', payload.id);
-
+      console.log('[login.js] Logged in, token:', localStorage.getItem('token')); // 🔍 debug
       window.location.href = 'events.html';
     } else {
       alert(data.error || 'Login failed');

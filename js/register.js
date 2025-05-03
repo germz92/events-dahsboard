@@ -1,6 +1,3 @@
-// js/config.js
-const API_BASE = 'https://events-dashboard-backend.onrender.com';
-
 async function register() {
   const email = document.getElementById('regEmail').value.trim().toLowerCase();
   const fullName = document.getElementById('regFullName').value.trim();

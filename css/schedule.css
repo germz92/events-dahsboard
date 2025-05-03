@@ -65,14 +65,14 @@ body {
     padding: 6px 12px;
     font-size: 16px;
     border: none;
-    background-color: #007BFF;
+    background-color: #CC0007;
     color: white;
     border-radius: 6px;
     cursor: pointer;
   }
   
   .top-controls button:hover {
-    background-color: #0056b3;
+    background-color: rgb(170, 3, 8);
   }
   
   .date-section {
@@ -128,7 +128,7 @@ body {
   
   .program-entry input.editing,
   .program-entry textarea.editing {
-    border: 1px solid #007BFF;
+    border: 1px solid #CC0007;
     background: white;
   }
   
@@ -140,7 +140,7 @@ body {
   .add-btn {
     margin-top: 6px;
     padding: 6px 12px;
-    background: #007BFF;
+    background: #CC0007;
     color: white;
     border: none;
     border-radius: 6px;
@@ -167,7 +167,7 @@ body {
   }
   
   .show-notes-btn {
-    color: #007BFF;
+    color: #a1a1a1;
     background: none;
     border: none;
     cursor: pointer;

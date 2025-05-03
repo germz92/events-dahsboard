@@ -79,7 +79,7 @@ function createLinkHTML(value, type) {
   else if (type === 'phone') href = `tel:${value}`;
   else if (type === 'address') href = `https://www.google.com/maps/search/?q=${encodeURIComponent(value)}`;
   else return `<div>${value}</div>`;
-  return `<a href="${href}" target="_blank" style="color: #007BFF; text-decoration: underline;">${value}</a>`;
+  return `<a href="${href}" target="_blank" style="color: #CC0007; text-decoration: underline;">${value}</a>`;
 }
 
 function createTd(child) {

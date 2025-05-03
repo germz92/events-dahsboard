@@ -24,7 +24,7 @@ input:-webkit-autofill {
 input[type="email"]:focus,
 input[type="text"]:focus,
 input[type="password"]:focus {
-  border-color: #007BFF;
+  border-color: #CC0007;
   outline: none;
   box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
 }

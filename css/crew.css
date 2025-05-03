@@ -135,7 +135,7 @@ body {
   }
   
   th {
-    background-color: #007bff;
+    background-color: #a1a1a1a1;
     color: white;
     text-align: left;
   }
@@ -157,7 +157,7 @@ body {
   
   button {
     padding: 6px 12px;
-    background-color: #007BFF;
+    background-color: #CC0007;
     color: white;
     border: none;
     border-radius: 4px;

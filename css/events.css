@@ -73,7 +73,7 @@ body {
   }
   
   .btn-create {
-    background-color: #007BFF;
+    background-color: #CC0007;
     color: white;
     padding: 10px 16px;
     border: none;
@@ -136,13 +136,13 @@ body {
     color: white;
   }
   
-  .btn-open { background-color: #007BFF; }
+  .btn-open { background-color: #CC0007; }
   .btn-share { background-color: #17a2b8; }
-  .btn-delete { background-color: #dc3545; }
+  .btn-delete { background-color: #858585; }
   
-  .btn-open:hover { background-color: #0056b3; }
+  .btn-open:hover { background-color: rgb(170, 3, 8); }
   .btn-share:hover { background-color: #138496; }
-  .btn-delete:hover { background-color: #c82333; }
+  .btn-delete:hover { background-color: #636363; }
   
   #newTitle,
   #newClient {
@@ -214,7 +214,7 @@ body {
   }
   
   .modal-content button:first-of-type {
-    background-color: #007BFF;
+    background-color: #CC0007;
     color: white;
   }
   .modal-content button:first-of-type:hover {

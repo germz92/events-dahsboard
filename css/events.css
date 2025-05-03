@@ -137,11 +137,11 @@ body {
   }
   
   .btn-open { background-color: #CC0007; }
-  .btn-share { background-color: #17a2b8; }
+  .btn-share { background-color: #a1a1a1; }
   .btn-delete { background-color: #858585; }
   
   .btn-open:hover { background-color: rgb(170, 3, 8); }
-  .btn-share:hover { background-color: #138496; }
+  .btn-share:hover { background-color: #868585; }
   .btn-delete:hover { background-color: #636363; }
   
   #newTitle,

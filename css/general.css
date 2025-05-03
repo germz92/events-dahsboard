@@ -78,7 +78,7 @@ input[type="date"] {
 input[type="date"]:focus,
 textarea:focus,
 input[type="text"]:focus {
-  border: 1px solid #3f51b5;
+  border: 1px solid #cc0007;
   background: #ffffff;
   outline: none;
 }
@@ -150,7 +150,7 @@ input[type="text"]:focus {
 /* Edit mode focus */
 .contacts-container td textarea:focus,
 .contacts-container td input[type="text"]:focus {
-  border-color: #3f51b5;
+  border-color: #CC0007;
   outline: none;
   background: #fff;
 }

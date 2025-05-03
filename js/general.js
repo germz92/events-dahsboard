@@ -27,8 +27,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         el.replaceWith(div);
       });
 
-      document.getElementById('start').value = general.start || '';
-      document.getElementById('end').value = general.end || '';
+      document.getElementById('start').value = general.start?.split('T')[0] || '';
+      document.getElementById('end').value = general.end?.split('T')[0] || '';
 
       const contactRows = document.getElementById('contactRows');
       contactRows.innerHTML = '';

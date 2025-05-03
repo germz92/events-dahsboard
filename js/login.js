@@ -1,3 +1,35 @@
+// LOGIN CHECK ON LOAD
+document.addEventListener('DOMContentLoaded', async () => {
+  const token = localStorage.getItem('token');
+
+  // ✅ If token exists, verify it
+  if (token) {
+    try {
+      const res = await fetch(`${API_BASE}/api/verify-token`, {
+        headers: { Authorization: token }
+      });
+
+      if (res.ok) {
+        window.location.href = 'events.html';
+        return;
+      }
+    } catch (err) {
+      console.warn('[index] Token check failed:', err);
+      localStorage.clear();
+    }
+  }
+
+  // ✅ Allow pressing Enter key to login
+  const passwordField = document.getElementById('password');
+  if (passwordField) {
+    passwordField.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        login();
+      }
+    });
+  }
+});
+
 // LOGIN
 window.login = async function () {
   if (window.loginLock) return;
@@ -37,10 +69,11 @@ window.login = async function () {
       localStorage.setItem('token', data.token);
       localStorage.setItem('fullName', data.fullName);
 
-      // optional: extract and store user ID
+      // Optional: extract and store user ID
       const payload = JSON.parse(atob(data.token.split('.')[1]));
       if (payload?.id) localStorage.setItem('userId', payload.id);
-      console.log('[login.js] Logged in, token:', localStorage.getItem('token')); // 🔍 debug
+
+      console.log('[login.js] Logged in, token:', data.token);
       window.location.href = 'events.html';
     } else {
       alert(data.error || 'Login failed');
@@ -60,20 +93,6 @@ window.login = async function () {
     window.loginLock = false;
   }
 };
-
-
-// ✅ Allow pressing Enter key to login
-document.addEventListener('DOMContentLoaded', () => {
-  const passwordField = document.getElementById('password');
-  if (passwordField) {
-    passwordField.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
-        login();
-      }
-    });
-  }
-});
-
 
 // REGISTER
 window.register = async function () {
@@ -108,4 +127,4 @@ window.register = async function () {
     alert(`Error: ${err.message}`);
     console.error(err);
   }
-}
+};

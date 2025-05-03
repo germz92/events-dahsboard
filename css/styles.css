@@ -93,7 +93,7 @@ button {
 }
 
 button:hover {
-  background-color: #0056b3;
+  background-color: rgb(170, 3, 8);
 }
 
 /* Input fields */
@@ -156,7 +156,7 @@ table select {
 }
 
 .event-links a:hover {
-  background-color: #0056b3;
+  background-color: #cc0007;
 }
 
 /* Auth form styling */
@@ -209,7 +209,7 @@ table select {
 }
 
 .auth-card button:hover {
-  background-color: #0056b3;
+  background-color: rgb(170, 3, 8);
 }
 
 /* Contact rows */

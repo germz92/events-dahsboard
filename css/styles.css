@@ -59,6 +59,10 @@ table td {
   text-overflow: ellipsis;
 }
 
+.toggle-link {
+  color: #a1a1a1;
+}
+
 /* Responsive column widths */
 table th:nth-child(1),
 table td:nth-child(1),

@@ -38,15 +38,32 @@
 <div id="shareModal" class="modal">
   <div class="modal-content">
     <h3>Share Event</h3>
+
+    <!-- Owners List -->
+    <div id="ownerList" style="margin-bottom: 10px;">
+      <strong>Owners:</strong>
+      <ul style="margin: 5px 0; padding-left: 20px;"></ul>
+    </div>
+
+    <!-- Shared With List -->
+    <div id="sharedList" style="margin-bottom: 10px;">
+      <strong>Shared With:</strong>
+      <ul style="margin: 5px 0; padding-left: 20px;"></ul>
+    </div>
+
     <input id="shareEmail" placeholder="Enter email to share">
+    
     <label style="margin: 8px 0; display: block;">
       <input type="checkbox" id="makeOwnerCheckbox">
       Make this user an owner
     </label>
+
     <button onclick="submitShare()">Share</button>
     <button onclick="closeModal()">Cancel</button>
   </div>
 </div>
+
+
 
   <!-- Create Modal -->
   <div id="createModal" class="modal">

@@ -23,9 +23,7 @@
       white-space: pre-wrap;
       word-break: break-word;
     }
-    td.text {
-      max-width: 200px;
-    }
+    td.text { max-width: 200px; }
     .edit-btn, .save-btn {
       margin: 20px;
       padding: 10px 16px;
@@ -41,7 +39,6 @@
 </head>
 <body>
   <h1 id="eventTitle" style="text-align: center;"></h1>
-
   <div style="text-align:center">
     <button class="edit-btn" id="editModeBtn" onclick="enterEditMode()">Edit</button>
     <button class="save-btn" id="saveBtn" onclick="saveData()">Save</button>
@@ -102,10 +99,14 @@
       return payload.id;
     }
 
-    function formatDateReadable(isoDate) {
-      if (!isoDate) return '';
-      const options = { year: 'numeric', month: 'short', day: '2-digit' };
-      return new Date(isoDate).toLocaleDateString('en-US', options);
+    function formatDateReadable(dateStr) {
+      if (!dateStr) return '';
+      const [year, month, day] = dateStr.split('-');
+      return new Date(Number(year), Number(month) - 1, Number(day)).toLocaleDateString('en-US', {
+        month: 'long',
+        day: '2-digit',
+        year: 'numeric'
+      });
     }
 
     function formatTo12Hour(time) {
